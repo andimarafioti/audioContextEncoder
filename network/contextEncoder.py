@@ -10,12 +10,11 @@ __author__ = 'Andres'
 
 
 class ContextEncoderNetwork(object):
-    def __init__(self, batch_size, window_size, gap_length, name, latent_space_dimentionality=64):
+    def __init__(self, batch_size, window_size, gap_length, name):
         self._batch_size = batch_size
         self._window_size = window_size
         self._gap_length = gap_length
         self._name = name
-        self._latent_dimentionality = latent_space_dimentionality
         self._initial_model_num = 0
         # tf Graph input
         self.train_input_data = tf.placeholder(tf.float32, shape=(batch_size, window_size - gap_length),
