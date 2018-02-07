@@ -10,7 +10,7 @@ __author__ = 'Andres'
 
 
 class ContextEncoderNetwork(object):
-    def __init__(self, batch_size, window_size, gap_length, name):
+    def __init__(self, batch_size, window_size, gap_length, learning_rate, name):
         self._batch_size = batch_size
         self._window_size = window_size
         self._gap_length = gap_length
@@ -24,7 +24,7 @@ class ContextEncoderNetwork(object):
         self._reconstructed_input_data = self._network(self.train_input_data, isTraining=True)
 
         self._loss = self._loss_graph()
-        self._optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(self._loss)
+        self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
 
     def _network(self, dataset, isTraining):
         dataset = dataset - 0.5
