@@ -78,6 +78,27 @@ class ContextEncoderNetwork(object):
         models_ext = ".ckpt"
         return models_path + str(models_number) + models_ext
 
+    def reconstructAudio(self, audios, model_num=None, max_batchs=200):
+        with tf.Session() as sess:
+            if model_num is not None:
+                path = self.modelsPath(model_num)
+            else:
+                path = self.modelsPath(self._initial_model_num)
+            saver = tf.train.Saver()
+            saver.restore(sess, path)
+            print("Model restored.")
+
+            batches_count = int(len(audios) / self._batch_size)
+
+            reconstructed = StrechableNumpyArray()
+            for batch_num in range(min(batches_count, max_batchs)):
+                batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
+                feed_dict = {self.train_input_data: batch_data}
+                reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
+            reconstructed = reconstructed.finalize()
+            reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
+            return reconstructed
+
     def reconstruct(self, data_path, model_num=None, max_steps=200):
         with tf.Session() as sess:
             reader = TFReader(data_path, self._window_size, self._gap_length, capacity=int(1e6))
