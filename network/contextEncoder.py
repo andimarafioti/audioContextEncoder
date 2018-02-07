@@ -16,14 +16,12 @@ class ContextEncoderNetwork(object):
         self._gap_length = gap_length
         self._name = name
         self._initial_model_num = 0
-        # tf Graph input
+
         self.train_input_data = tf.placeholder(tf.float32, shape=(batch_size, window_size - gap_length),
                                                name='train_input_data')
         self.gap_data = tf.placeholder(tf.float32, shape=(batch_size, gap_length), name='gap_data')
 
         self._reconstructed_input_data = self._network(self.train_input_data, isTraining=True)
-
-        # Loss, Optimizer and Predictions
 
         self._loss = self._loss_graph()
         self._optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(self._loss)
