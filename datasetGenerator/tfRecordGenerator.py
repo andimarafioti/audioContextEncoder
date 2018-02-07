@@ -9,23 +9,25 @@ __author__ = 'Andres'
 
 
 class TFRecordGenerator(object):
-    def __init__(self, pathToDataFolder, window_size, gapLength, hopSize, notifyEvery=10000):
+    def __init__(self, baseName, pathToDataFolder, window_size, gapLength, hopSize, notifyEvery=10000):
         self._pathToDataFolder = pathToDataFolder
         self._windowSize = window_size
         self._gapLength = gapLength
         self._hopSize = hopSize
 
         self._notifyEvery = notifyEvery
+        self._baseName = baseName
+
+    def name(self):
+        return self._baseName + "_w" + str(self._windowSize) + '_g' + str(self._gapLength) + '_h' + str(self._hopSize)
 
     def generateDataset(self):
         start = time.time()
 
-        train_filename = 'train_w5120_g1024_h512.tfrecords'  # address to save the TFRecords file
+        train_filename = self.name() + '.tfrecords'  # address to save the TFRecords file
         # open the TFRecords file
         writer = tf.python_io.TFRecordWriter(train_filename)
 
-        # window_size = 5120
-        # gap_length = 1024
         time_per_loaded = []
         time_to_HD = []
         print("start:", start)
