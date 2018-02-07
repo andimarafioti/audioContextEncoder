@@ -27,11 +27,10 @@ class ContextEncoderNetwork(object):
         self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
 
     def _network(self, dataset, isTraining):
-        dataset = dataset - 0.5
         model = SequentialModel(train_input_data=dataset, name="ContextEncoder")
         self._encoder(model, isTraining)
         self._decoder(model, isTraining)
-        return model.output() + 0.5
+        return model.output()
 
     def _encoder(self, model, isTraining):
         with tf.variable_scope("Encoder"):
