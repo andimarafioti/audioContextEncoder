@@ -1,9 +1,10 @@
-import tensorflow as tf
 import numpy as np
-from evaluationWriter import EvaluationWriter
-from sequentialModel import SequentialModel
-from strechableNumpyArray import StrechableNumpyArray
-from tfReader import TFReader
+import tensorflow as tf
+
+from network.sequentialModel import SequentialModel
+from utils.evaluationWriter import EvaluationWriter
+from utils.strechableNumpyArray import StrechableNumpyArray
+from utils.tfReader import TFReader
 
 __author__ = 'Andres'
 
