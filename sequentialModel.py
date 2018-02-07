@@ -12,9 +12,9 @@ class SequentialModel(object):
 
     input_shape : Shape of the input (disregarding the batch size)
     """
-    def __init__(self, input_shape, name):
+    def __init__(self, train_input_data, name):
         self._name = name
-        self.train_input_data = tf.placeholder(tf.float32, shape=(None, *input_shape), name='train_input_data')
+        self.train_input_data = train_input_data
         self._description = "---------\n" + name + "\n---------"
         self._outputSetter(self.train_input_data)
         self._layerPrimitives = []

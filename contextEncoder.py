@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from evaluationWriter import EvaluationWriter
+from sequentialModel import SequentialModel
 from strechableNumpyArray import StrechableNumpyArray
 from tfReader import TFReader
 
@@ -28,61 +29,31 @@ class ContextEncoderNetwork(object):
         self._optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(self._loss)
 
     def _network(self, dataset, isTraining):
-        encoded = self._encoder(dataset, isTraining)
-        reconstructed = self._decoder(encoded, isTraining)
-        return reconstructed
+        dataset = dataset - 0.5
+        model = SequentialModel(train_input_data=dataset, name="ContextEncoder")
+        self._encoder(model, isTraining)
+        self._decoder(model, isTraining)
+        return model.output() + 0.5
 
-    def _encoder(self, data, isTraining):
+    def _encoder(self, model, isTraining):
         with tf.variable_scope("Encoder"):
-            data = data - 0.5
-            reshape = tf.reshape(data, (self._batch_size, self._window_size - self._gap_length, 1))
+            model.addReshape((self._batch_size, self._window_size - self._gap_length, 1))
+            model.addConvLayer(filter_width=129, input_channels=1, output_channels=16,
+                                      stride=4, name="First_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=65, input_channels=16, output_channels=64,
+                                      stride=4, name="Second_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=33, input_channels=64, output_channels=256,
+                                      stride=4, name="Third_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=17, input_channels=256, output_channels=1024,
+                                      stride=4, name="Fourth_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=9, input_channels=1024, output_channels=4096,
+                                      stride=4, name="Last_Conv", isTraining=isTraining)
 
-            first_conv = self._convLayer(input_signal=reshape, filter_width=129, input_channels=1,
-                                         output_channels=16, stride=4, name="First_Conv", isTraining=isTraining)
-            second_conv = self._convLayer(input_signal=first_conv, filter_width=65, input_channels=16,
-                                          output_channels=64, stride=4, name="Second_Conv", isTraining=isTraining)
-            third_conv = self._convLayer(input_signal=second_conv, filter_width=33, input_channels=64,
-                                         output_channels=256, stride=4, name="Third_Conv", isTraining=isTraining)
-            fourth_conv = self._convLayer(input_signal=third_conv, filter_width=17, input_channels=256,
-                                         output_channels=1024, stride=4, name="Fourth_Conv", isTraining=isTraining)
-            last_conv = self._convLayer(input_signal=fourth_conv, filter_width=9, input_channels=1024,
-                                          output_channels=4096, stride=4, name="Last_Conv", isTraining=isTraining)
-
-            return last_conv
-
-    def _decoder(self, data, isTraining):
+    def _decoder(self, model, isTraining):
         with tf.variable_scope("Decoder"):
-            with tf.variable_scope('Decoding', reuse=not isTraining):
-                layers_filters = self._weight_variable([5, 4096, 1024])
-                layers_biases = self._bias_variable([1024])
-                conv = tf.nn.conv1d(data, layers_filters, stride=4, padding="SAME") + layers_biases
-                shape = conv.get_shape().as_list()
-                print("decoded ", shape)
-                print(self._gap_length)
-                reshape = tf.reshape(conv, [shape[0], self._gap_length])
-                reshape = reshape + 0.5
-            return reshape
-
-    def _convLayer(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
-                   padding="SAME"):
-        with tf.variable_scope(name, reuse=not isTraining):
-            layers_filters = self._weight_variable([filter_width, input_channels, output_channels])
-            layers_biases = self._bias_variable([output_channels])
-            conv = tf.nn.conv1d(input_signal, layers_filters, stride=stride, padding=padding)
-            return tf.nn.relu(conv + layers_biases)
-
-    def _linearLayer(self, input_signal, input_size, output_size, name, isTraining):
-        with tf.variable_scope(name, reuse=not isTraining):
-            weights = self._weight_variable([input_size, output_size])
-            biases = self._bias_variable(output_size)
-            linear_function = tf.matmul(input_signal, weights) + biases
-            return linear_function
-
-    def _weight_variable(self, shape):
-        return tf.get_variable('W', shape, initializer=tf.contrib.layers.xavier_initializer())
-
-    def _bias_variable(self, shape):
-        return tf.get_variable('bias', shape, initializer=tf.contrib.layers.xavier_initializer())
+            model.addConvLayerWithoutNonLin(filter_width=5, input_channels=4096, output_channels=1024,
+                                            stride=4, name="Decode_Conv", isTraining=isTraining)
+            model.addReshape((self._batch_size, self._gap_length))
 
     def euclideanNorm(self, tensor):
         squared = tf.square(tensor)
