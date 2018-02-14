@@ -55,12 +55,12 @@ class ContextEncoderNetwork(object):
     def euclideanNorm(self, tensor):
         squared = tf.square(tensor)
         summed = tf.reduce_sum(squared, axis=1)
-        return tf.sqrt(summed + 1e-10)
+        return summed
 
     def _loss_graph(self):
         with tf.variable_scope("Loss"):
-            norm_orig = self.euclideanNorm((self.gap_data - 0.5) * 2)
-            error = (self.gap_data - self._reconstructed_input_data) * 2
+            norm_orig = self.euclideanNorm(self.gap_data) / 5
+            error = (self.gap_data - self._reconstructed_input_data)
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1) * (1 + 1 / norm_orig))
             tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
