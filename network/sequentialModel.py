@@ -24,12 +24,11 @@ class SequentialModel(object):
     def output(self):
         return self._output
 
+    def setOutputTo(self, value):
+        self._outputSetter(value)
+
     def description(self):
         return self._description
-
-    def _outputSetter(self, value):
-        self._output = value
-        self._description += "\n" + str(value)
 
     def addSeveralConvLayers(self, filter_widths, input_channels, output_channels, strides, names, isTraining=True,
                              padding="SAME"):
@@ -75,6 +74,10 @@ class SequentialModel(object):
 
     def addRelu(self):
         self._outputSetter(tf.nn.relu(self._output))
+
+    def _outputSetter(self, value):
+        self._output = value
+        self._description += "\n" + str(value)
 
     def _convLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, stride, name,
                                 isTraining,
