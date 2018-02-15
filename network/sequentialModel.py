@@ -12,12 +12,15 @@ class SequentialModel(object):
 
     input_shape : Shape of the input (disregarding the batch size)
     """
-    def __init__(self, train_input_data, name):
+    def __init__(self, shapeOfInput, name):
         self._name = name
-        self.train_input_data = train_input_data
+        self._input = tf.placeholder(tf.float32, shape=shapeOfInput, name='input_data')
         self._description = "---------\n" + name + "\n---------"
-        self._outputSetter(self.train_input_data)
+        self._outputSetter(self._input)
         self._layerPrimitives = []
+
+    def input(self):
+        return self._input
 
     def output(self):
         return self._output
@@ -29,29 +32,29 @@ class SequentialModel(object):
         self._output = value
         self._description += "\n" + str(value)
 
-    def addConvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining, padding="SAME"):
+    def addConvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining=True, padding="SAME"):
         self._outputSetter(self._convLayer(self._output, filter_width, input_channels, output_channels,
                                        stride, name, isTraining, padding))
 
-    def addConvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, name, isTraining,
+    def addConvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, name, isTraining=True,
                    padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
                                                         stride, name, isTraining, padding))
 
-    def addDeconvLayer(self, filter_width, input_channels, output_channels, stride, output_shape, name, isTraining,
+    def addDeconvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining=True,
                        padding="SAME"):
         self._outputSetter(self._deconvLayer(self._output, filter_width, input_channels, output_channels,
-                                                        stride, output_shape, name, isTraining, padding))
+                                                        stride, name, isTraining, padding))
 
-    def addDeconvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, output_shape, name, isTraining,
-                       padding="SAME"):
+    def addDeconvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, name,
+                                    isTraining=True, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
-                                                        stride, output_shape, name, isTraining, padding))
+                                                        stride, name, isTraining, padding))
 
     def addReshape(self, output_shape):
         self._outputSetter(tf.reshape(self._output, output_shape))
 
-    def addFullyConnectedLayer(self, input_size, output_size, name, isTraining):
+    def addFullyConnectedLayer(self, input_size, output_size, name, isTraining=True):
         self._outputSetter(self._linearLayer(self._output, input_size, output_size, name, isTraining))
 
     def addRelu(self):
@@ -73,8 +76,13 @@ class SequentialModel(object):
             return tf.nn.relu(conv)
 
     def _deconvLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, stride,
-                                  output_shape, name, isTraining,
+                                  name, isTraining,
                    padding="SAME"):
+        input_signal_shape = input_signal.get_shape().as_list()
+        output_shape = input_signal_shape[:-1] + [output_channels]
+        for index, stride in enumerate(stride):
+            output_shape[index] = output_shape[index]*stride
+
         with tf.variable_scope(name, reuse=not isTraining):
             layers_filters = self._weight_variable([1, filter_width, output_channels, input_channels])
             layers_biases = self._bias_variable([output_channels])
@@ -82,11 +90,11 @@ class SequentialModel(object):
                                             output_shape=output_shape)
             return deconv + layers_biases
 
-    def _deconvLayer(self, input_signal, filter_width, input_channels, output_channels, stride, output_shape,
-                     name, isTraining, padding="SAME"):
+    def _deconvLayer(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
+                     padding="SAME"):
         with tf.variable_scope(name, reuse=not isTraining):
             deconv = self._deconvLayerWithoutNonLin(input_signal, filter_width, input_channels, output_channels,
-                                                    stride, output_shape, name, isTraining)
+                                                    stride, name, isTraining)
             return tf.nn.relu(deconv)
 
     def _linearLayer(self, input_signal, input_size, output_size, name, isTraining):
