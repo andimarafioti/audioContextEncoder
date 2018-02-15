@@ -31,8 +31,8 @@ class ContextEncoderNetwork(object):
 
     def _loss_graph(self):
         with tf.variable_scope("Loss"):
-            norm_orig = self.euclideanNorm((self.gap_data - 0.5) * 2) / 5
-            error = (self.gap_data - self._reconstructed_input_data) * 2
+            norm_orig = self.euclideanNorm(self.gap_data) / 5
+            error = self.gap_data - self._reconstructed_input_data
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1) * (1 + 1 / norm_orig))
             tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
@@ -46,7 +46,7 @@ class ContextEncoderNetwork(object):
             return total_loss
 
     def modelsPath(self, models_number):
-        models_path = "saved_models/model-" + self._name
+        models_path = "../saved_models/model-" + self._name
         models_ext = ".ckpt"
         return models_path + str(models_number) + models_ext
 
@@ -127,7 +127,7 @@ class ContextEncoderNetwork(object):
                     sess.run([init, tf.local_variables_initializer()])
                     print("Initialized")
 
-                logs_path = 'logdir_real_cae/' + self._name  # write each run to a diff folder.
+                logs_path = '../logdir_real_cae/' + self._name  # write each run to a diff folder.
                 print("logs path:", logs_path)
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
                 merged_summary = tf.summary.merge_all()
