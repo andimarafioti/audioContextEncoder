@@ -17,7 +17,6 @@ class SequentialModel(object):
         self._input = tf.placeholder(tf.float32, shape=shapeOfInput, name='input_data')
         self._description = "---------\n" + name + "\n---------"
         self._outputSetter(self._input)
-        self._layerPrimitives = []
 
     def input(self):
         return self._input
