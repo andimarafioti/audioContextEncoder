@@ -10,9 +10,9 @@ __author__ = 'Andres'
 
 class TFRecordGenerator(object):
     """To generate a Dataset, instantiate this class with its arguments and call generateDataset()"""
-    def __init__(self, baseName, pathToDataFolder, window_size, gapLength, hopSize, notifyEvery=10000):
+    def __init__(self, baseName, pathToDataFolder, windowSize, gapLength, hopSize, notifyEvery=10000):
         self._pathToDataFolder = pathToDataFolder
-        self._windowSize = window_size
+        self._windowSize = windowSize
         self._gapLength = gapLength
         self._hopSize = hopSize
 
