@@ -38,9 +38,15 @@ class SequentialModel(object):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
                                                         stride, name, isTraining, padding))
 
-    # def addDeconvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining, padding="SAME"):
-    #     self._outputSetter(self._deconvLayer(self._output, filter_width, input_channels, output_channels,
-    #                                                     stride, name, isTraining, padding))
+    def addDeconvLayer(self, filter_width, input_channels, output_channels, stride, output_shape, name, isTraining,
+                       padding="SAME"):
+        self._outputSetter(self._deconvLayer(self._output, filter_width, input_channels, output_channels,
+                                                        stride, output_shape, name, isTraining, padding))
+
+    def addDeconvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, output_shape, name, isTraining,
+                       padding="SAME"):
+        self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
+                                                        stride, output_shape, name, isTraining, padding))
 
     def addReshape(self, output_shape):
         self._outputSetter(tf.reshape(self._output, output_shape))
@@ -60,21 +66,22 @@ class SequentialModel(object):
                    padding)
             return tf.nn.relu(conv)
 
-    # def _deconvLayer(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
-    #                padding="SAME"):
-    #     with tf.variable_scope(name, reuse=not isTraining):
-    #
-    #
-    #         inputs,
-    #         filters,
-    #         kernel_size,
-    #         strides = (1, 1),
-    #         padding = 'valid',
-    #
-    #         layers_filters = self._weight_variable([filter_width, input_channels, output_channels])
-    #         layers_biases = self._bias_variable([output_channels])
-    #         conv = tf.nn.conv1d(input_signal, layers_filters, stride=stride, padding=padding) + layers_biases
-    #         return tf.nn.relu(conv)
+    def _deconvLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, stride,
+                                  output_shape, name, isTraining,
+                   padding="SAME"):
+        with tf.variable_scope(name, reuse=not isTraining):
+            layers_filters = self._weight_variable([1, filter_width, output_channels, input_channels])
+            layers_biases = self._bias_variable([output_channels])
+            deconv = tf.nn.conv2d_transpose(input_signal, layers_filters, strides=stride, padding=padding,
+                                            output_shape=output_shape)
+            return deconv + layers_biases
+
+    def _deconvLayer(self, input_signal, filter_width, input_channels, output_channels, stride, output_shape,
+                     name, isTraining, padding="SAME"):
+        with tf.variable_scope(name, reuse=not isTraining):
+            deconv = self._deconvLayerWithoutNonLin(input_signal, filter_width, input_channels, output_channels,
+                                                    stride, output_shape, name, isTraining)
+            return tf.nn.relu(deconv)
 
     def _linearLayer(self, input_signal, input_size, output_size, name, isTraining):
         with tf.variable_scope(name, reuse=not isTraining):

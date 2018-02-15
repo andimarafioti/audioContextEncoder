@@ -30,6 +30,7 @@ class ContextEncoderNetwork(object):
         model = SequentialModel(train_input_data=dataset, name="ContextEncoder")
         self._encoder(model, isTraining)
         self._decoder(model, isTraining)
+        print(model.description())
         return model.output()
 
     def _encoder(self, model, isTraining):
@@ -48,8 +49,11 @@ class ContextEncoderNetwork(object):
 
     def _decoder(self, model, isTraining):
         with tf.variable_scope("Decoder"):
-            model.addConvLayerWithoutNonLin(filter_width=1, input_channels=128, output_channels=1024,
-                                            stride=(1, 1, 4, 1), name="Decode_Conv", isTraining=isTraining)
+            stride = 4
+            signal_length = 4
+            model.addDeconvLayer(filter_width=1, input_channels=128, output_channels=64,
+                                 output_shape=[self._batch_size, 1, stride*signal_length, 64],
+                                 stride=(1, 1, stride, 1), name="Decode_Conv", isTraining=isTraining)
             model.addReshape((self._batch_size, self._gap_length))
 
     def euclideanNorm(self, tensor):
