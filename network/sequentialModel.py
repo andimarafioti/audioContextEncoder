@@ -51,6 +51,9 @@ class SequentialModel(object):
     def addReshape(self, output_shape):
         self._outputSetter(tf.reshape(self._output, output_shape))
 
+    def addFullyConnectedLayer(self, input_size, output_size, name, isTraining):
+        self._outputSetter(self._linearLayer(self._output, input_size, output_size, name, isTraining))
+
     def _convLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
                    padding="SAME"):
         with tf.variable_scope(name, reuse=not isTraining):
