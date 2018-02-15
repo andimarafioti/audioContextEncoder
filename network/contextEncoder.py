@@ -34,22 +34,22 @@ class ContextEncoderNetwork(object):
 
     def _encoder(self, model, isTraining):
         with tf.variable_scope("Encoder"):
-            model.addReshape((self._batch_size, self._window_size - self._gap_length, 1))
-            model.addConvLayer(filter_width=129, input_channels=1, output_channels=16,
-                                      stride=4, name="First_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=65, input_channels=16, output_channels=64,
-                                      stride=4, name="Second_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=33, input_channels=64, output_channels=256,
-                                      stride=4, name="Third_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=17, input_channels=256, output_channels=1024,
-                                      stride=4, name="Fourth_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=9, input_channels=1024, output_channels=4096,
-                                      stride=4, name="Last_Conv", isTraining=isTraining)
+            model.addReshape((self._batch_size, 1, self._window_size - self._gap_length, 1))
+            model.addConvLayer(filter_width=15, input_channels=1, output_channels=8,
+                                      stride=(1, 1, 4, 1), name="First_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=7, input_channels=8, output_channels=16,
+                                      stride=(1, 1, 4, 1), name="Second_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=5, input_channels=16, output_channels=32,
+                                      stride=(1, 1, 4, 1), name="Third_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=3, input_channels=32, output_channels=64,
+                                      stride=(1, 1, 4, 1), name="Fourth_Conv", isTraining=isTraining)
+            model.addConvLayer(filter_width=1, input_channels=64, output_channels=128,
+                                      stride=(1, 1, 4, 1), name="Last_Conv", isTraining=isTraining)
 
     def _decoder(self, model, isTraining):
         with tf.variable_scope("Decoder"):
-            model.addConvLayerWithoutNonLin(filter_width=5, input_channels=4096, output_channels=1024,
-                                            stride=4, name="Decode_Conv", isTraining=isTraining)
+            model.addConvLayerWithoutNonLin(filter_width=1, input_channels=128, output_channels=1024,
+                                            stride=(1, 1, 4, 1), name="Decode_Conv", isTraining=isTraining)
             model.addReshape((self._batch_size, self._gap_length))
 
     def euclideanNorm(self, tensor):
