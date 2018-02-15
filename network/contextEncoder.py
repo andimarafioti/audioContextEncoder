@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-from network.sequentialModel import SequentialModel
 from utils.evaluationWriter import EvaluationWriter
 from utils.strechableNumpyArray import StrechableNumpyArray
 from utils.tfReader import TFReader
@@ -10,51 +9,20 @@ __author__ = 'Andres'
 
 
 class ContextEncoderNetwork(object):
-    def __init__(self, batch_size, window_size, gap_length, learning_rate, name):
+    def __init__(self, model, batch_size, window_size, gap_length, learning_rate, name):
         self._batch_size = batch_size
         self._window_size = window_size
         self._gap_length = gap_length
         self._name = name
         self._initial_model_num = 0
 
-        self.train_input_data = tf.placeholder(tf.float32, shape=(batch_size, window_size - gap_length),
-                                               name='train_input_data')
+        self._model = model
         self.gap_data = tf.placeholder(tf.float32, shape=(batch_size, gap_length), name='gap_data')
 
-        self._reconstructed_input_data = self._network(self.train_input_data, isTraining=True)
+        self._reconstructed_input_data = self._model.output()
 
         self._loss = self._loss_graph()
         self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
-
-    def _network(self, dataset, isTraining):
-        model = SequentialModel(train_input_data=dataset, name="ContextEncoder")
-        self._encoder(model, isTraining)
-        self._decoder(model, isTraining)
-        print(model.description())
-        return model.output()
-
-    def _encoder(self, model, isTraining):
-        with tf.variable_scope("Encoder"):
-            model.addReshape((self._batch_size, 1, self._window_size - self._gap_length, 1))
-            model.addConvLayer(filter_width=15, input_channels=1, output_channels=8,
-                                      stride=(1, 1, 4, 1), name="First_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=7, input_channels=8, output_channels=16,
-                                      stride=(1, 1, 4, 1), name="Second_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=5, input_channels=16, output_channels=32,
-                                      stride=(1, 1, 4, 1), name="Third_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=3, input_channels=32, output_channels=64,
-                                      stride=(1, 1, 4, 1), name="Fourth_Conv", isTraining=isTraining)
-            model.addConvLayer(filter_width=1, input_channels=64, output_channels=128,
-                                      stride=(1, 1, 4, 1), name="Last_Conv", isTraining=isTraining)
-
-    def _decoder(self, model, isTraining):
-        with tf.variable_scope("Decoder"):
-            stride = 4
-            signal_length = 4
-            model.addDeconvLayer(filter_width=1, input_channels=128, output_channels=64,
-                                 output_shape=[self._batch_size, 1, stride*signal_length, 64],
-                                 stride=(1, 1, stride, 1), name="Decode_Conv", isTraining=isTraining)
-            model.addReshape((self._batch_size, self._gap_length))
 
     def euclideanNorm(self, tensor):
         squared = tf.square(tensor)
@@ -63,13 +31,13 @@ class ContextEncoderNetwork(object):
 
     def _loss_graph(self):
         with tf.variable_scope("Loss"):
-            norm_orig = self.euclideanNorm(self.gap_data) / 5
-            error = (self.gap_data - self._reconstructed_input_data)
+            norm_orig = self.euclideanNorm((self.gap_data - 0.5) * 2) / 5
+            error = (self.gap_data - self._reconstructed_input_data) * 2
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1) * (1 + 1 / norm_orig))
             tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
-            lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e1
+            lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
             tf.summary.scalar("lossL2", lossL2)
 
             total_loss = tf.add_n([reconstruction_loss, lossL2])
@@ -97,7 +65,7 @@ class ContextEncoderNetwork(object):
             reconstructed = StrechableNumpyArray()
             for batch_num in range(min(batches_count, max_batchs)):
                 batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
-                feed_dict = {self.train_input_data: batch_data}
+                feed_dict = {self._model.input(): batch_data}
                 reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
             reconstructed = reconstructed.finalize()
             reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
@@ -130,7 +98,7 @@ class ContextEncoderNetwork(object):
                 break
             out_gaps.append(np.reshape(gaps, (-1)))
 
-            feed_dict = {self.train_input_data: sides, self.gap_data: gaps}
+            feed_dict = {self._model.input(): sides, self.gap_data: gaps}
             reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
         reconstructed = reconstructed.finalize()
         reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
@@ -175,13 +143,13 @@ class ContextEncoderNetwork(object):
                         print("End of queue!")
                         break
 
-                    feed_dict = {self.train_input_data: sides, self.gap_data: gaps}
+                    feed_dict = {self._model.input(): sides, self.gap_data: gaps}
                     sess.run(self._optimizer, feed_dict=feed_dict)
 
                     if step % 40 == 0:
                         train_summ = sess.run(merged_summary, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 1000 == 0:
+                    if step % 2000 == 0:
                         saver.save(sess, self.modelsPath(self._initial_model_num + step))
                         reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=256)
                         evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
