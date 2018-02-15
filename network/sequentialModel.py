@@ -10,7 +10,7 @@ class SequentialModel(object):
     It is initialized empty and one can add different types of layers to it.
     The output of the network is accessed with the output() function
 
-    input_shape : Shape of the input (disregarding the batch size)
+    input_shape : Shape of the input (with batch size)
     """
     def __init__(self, shapeOfInput, name):
         self._name = name
