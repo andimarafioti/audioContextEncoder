@@ -30,40 +30,40 @@ class SequentialModel(object):
     def description(self):
         return self._description
 
-    def addSeveralConvLayers(self, filter_widths, input_channels, output_channels, strides, names, isTraining=True,
+    def addSeveralConvLayers(self, filter_shapes, input_channels, output_channels, strides, names, isTraining=True,
                              padding="SAME"):
-        assert (len(filter_widths) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
+        assert (len(filter_shapes) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
             "filter_widths, input_channels, output_channels, strides, and names should all have the same length"
-        for filter_width, input_channels, output_channels, stride, name in \
-                zip(filter_widths, input_channels, output_channels, strides, names):
-            self.addConvLayer(filter_width, input_channels, output_channels, stride, name, isTraining, padding)
+        for filter_shape, input_channels, output_channels, stride, name in \
+                zip(filter_shapes, input_channels, output_channels, strides, names):
+            self.addConvLayer(filter_shape, input_channels, output_channels, stride, name, isTraining, padding)
 
-    def addConvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining=True,
+    def addConvLayer(self, filter_shape, input_channels, output_channels, stride, name, isTraining=True,
                      padding="SAME"):
-        self._outputSetter(self._convLayer(self._output, filter_width, input_channels, output_channels,
+        self._outputSetter(self._convLayer(self._output, filter_shape, input_channels, output_channels,
                                            stride, name, isTraining, padding))
 
-    def addConvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, name, isTraining=True,
+    def addConvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, isTraining=True,
                                   padding="SAME"):
-        self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
+        self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                                         stride, name, isTraining, padding))
 
-    def addSeveralDeconvLayers(self, filter_widths, input_channels, output_channels, strides, names, isTraining=True,
+    def addSeveralDeconvLayers(self, filter_shapes, input_channels, output_channels, strides, names, isTraining=True,
                        padding="SAME"):
-        assert (len(filter_widths) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
+        assert (len(filter_shapes) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
             "filter_widths, input_channels, output_channels, strides, and names should all have the same length"
-        for filter_width, input_channels, output_channels, stride, name in \
-                zip(filter_widths, input_channels, output_channels, strides, names):
-            self.addDeconvLayer(filter_width, input_channels, output_channels, stride, name, isTraining, padding)
+        for filter_shape, input_channels, output_channels, stride, name in \
+                zip(filter_shapes, input_channels, output_channels, strides, names):
+            self.addDeconvLayer(filter_shape, input_channels, output_channels, stride, name, isTraining, padding)
 
-    def addDeconvLayer(self, filter_width, input_channels, output_channels, stride, name, isTraining=True,
+    def addDeconvLayer(self, filter_shape, input_channels, output_channels, stride, name, isTraining=True,
                        padding="SAME"):
-        self._outputSetter(self._deconvLayer(self._output, filter_width, input_channels, output_channels,
+        self._outputSetter(self._deconvLayer(self._output, filter_shape, input_channels, output_channels,
                                              stride, name, isTraining, padding))
 
-    def addDeconvLayerWithoutNonLin(self, filter_width, input_channels, output_channels, stride, name,
+    def addDeconvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name,
                                     isTraining=True, padding="SAME"):
-        self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_width, input_channels, output_channels,
+        self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                                           stride, name, isTraining, padding))
 
     def addReshape(self, output_shape):
@@ -79,42 +79,45 @@ class SequentialModel(object):
         self._output = value
         self._description += "\n" + str(value)
 
-    def _convLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, stride, name,
+    def _convLayerWithoutNonLin(self, input_signal, filter_shape, input_channels, output_channels, stride, name,
                                 isTraining,
                                 padding="SAME"):
+        assert(len(filter_shape) == 2), "filter must have 2 dimensions!"
         with tf.variable_scope(name, reuse=not isTraining):
-            layers_filters = self._weight_variable([1, filter_width, input_channels, output_channels])
+            layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], input_channels, output_channels])
             layers_biases = self._bias_variable([output_channels])
             conv = tf.nn.conv2d(input_signal, layers_filters, strides=stride, padding=padding)
             return conv + layers_biases
 
-    def _convLayer(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
+    def _convLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, isTraining,
                    padding="SAME"):
         with tf.variable_scope(name, reuse=not isTraining):
-            conv = self._convLayerWithoutNonLin(input_signal, filter_width, input_channels, output_channels, stride,
+            conv = self._convLayerWithoutNonLin(input_signal, filter_shape, input_channels, output_channels, stride,
                                                 name, isTraining,
                                                 padding)
             return tf.nn.relu(conv)
 
-    def _deconvLayerWithoutNonLin(self, input_signal, filter_width, input_channels, output_channels, strides,
+    def _deconvLayerWithoutNonLin(self, input_signal, filter_shape, input_channels, output_channels, strides,
                                   name, isTraining,
                                   padding="SAME"):
+        assert(len(filter_shape) == 2), "filter must have 2 dimensions!"
+
         input_signal_shape = input_signal.get_shape().as_list()
         output_shape = input_signal_shape[:-1] + [output_channels]
         for index, stride in enumerate(strides):
             output_shape[index] = output_shape[index] * stride
 
         with tf.variable_scope(name, reuse=not isTraining):
-            layers_filters = self._weight_variable([1, filter_width, output_channels, input_channels])
+            layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], output_channels, input_channels])
             layers_biases = self._bias_variable([output_channels])
             deconv = tf.nn.conv2d_transpose(input_signal, layers_filters, strides=strides, padding=padding,
                                             output_shape=output_shape)
             return deconv + layers_biases
 
-    def _deconvLayer(self, input_signal, filter_width, input_channels, output_channels, stride, name, isTraining,
+    def _deconvLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, isTraining,
                      padding="SAME"):
         with tf.variable_scope(name, reuse=not isTraining):
-            deconv = self._deconvLayerWithoutNonLin(input_signal, filter_width, input_channels, output_channels,
+            deconv = self._deconvLayerWithoutNonLin(input_signal, filter_shape, input_channels, output_channels,
                                                     stride, name, isTraining)
             return tf.nn.relu(deconv)
 
