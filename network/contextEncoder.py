@@ -109,8 +109,9 @@ class ContextEncoderNetwork(object):
 
         return reconstructed, out_gaps
 
-    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None):
-        with tf.Session() as sess:
+    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=0.4):
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
                 trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=40)
                 validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=4000)
