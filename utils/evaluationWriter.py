@@ -10,14 +10,14 @@ class EvaluationWriter(object):
         self._index = 0
 
     def evaluate(self, reconstructed, original_gaps, step):
-        fake_a = (reconstructed - 0.5) * 2
-        gap = (original_gaps - 0.5) * 2
+        fake_a = reconstructed
+        gap = original_gaps
 
         SNRs = np.zeros((len(fake_a),))
         for index, signal in enumerate(fake_a):
             SNRs[index] = self._pavlovs_SNR(gap[index], fake_a[index])
 
-        norm_orig = self._euclideanNorm(gap)
+        norm_orig = self._euclideanNorm(gap) / 5
         error = gap - fake_a
         reconstruction_loss = 0.5 * np.sum(np.square(error), axis=1) * (1 + 1 / norm_orig)
 
@@ -33,7 +33,7 @@ class EvaluationWriter(object):
     def _euclideanNorm(self, vector):
         squared = np.square(vector)
         summed = np.sum(squared, axis=1)
-        return np.sqrt(summed + 1e-10)
+        return summed
 
     def save(self):
         self._writer.save()
