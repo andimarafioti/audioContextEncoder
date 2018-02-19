@@ -133,6 +133,13 @@ class ContextEncoderNetwork(object):
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
                 merged_summary = tf.summary.merge_all()
 
+                original_summary = tf.summary.image('original',
+                                                    tf.reshape(self.gap_data, [self._batch_size, 32, 32, 1]),
+                                                    max_outputs=2, collections=None)
+                reconstructed_summary = tf.summary.image('reconstructed',
+                                 tf.reshape(self._reconstructed_input_data, [self._batch_size, 32, 32, 1]),
+                                 max_outputs=2, collections=None)
+
                 trainReader.start()
                 evalWriter = EvaluationWriter(self._name + '.xlsx')
 
@@ -151,6 +158,8 @@ class ContextEncoderNetwork(object):
                         train_summ = sess.run(merged_summary, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
                     if step % 2000 == 0:
+                        or_summ, rec_summ = sess.run([original_summary, reconstructed_summary])
+                        writer.add_summary(or_summ, rec_summ)
                         saver.save(sess, self.modelsPath(self._initial_model_num + step))
                         reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=256)
                         evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
