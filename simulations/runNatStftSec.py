@@ -51,6 +51,7 @@ with tf.name_scope('Energy_Spectogram'):
     stft = tf.contrib.signal.stft(signals=stacked_halfs, frame_length=fft_frame_length, frame_step=fft_frame_step)
     real_stft = tf.real(stft)
     imag_stft = tf.imag(stft)
+    real_stft_left = real_stft[:, 0, :, :]
     real_stft_right = real_stft[:, 1, :, :]
 
     imag_stft_left = imag_stft[:, 0, :, :]
