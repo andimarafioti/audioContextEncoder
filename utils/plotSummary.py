@@ -29,6 +29,7 @@ class PlotSummary(object):
 
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
+        plt.close()
         buf.seek(0)
         image = tf.image.decode_png(buf.getvalue(), channels=4)
         image = tf.expand_dims(image, 0)
