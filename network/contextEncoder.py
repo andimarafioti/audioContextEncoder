@@ -71,7 +71,7 @@ class ContextEncoderNetwork(object):
             reconstructed = StrechableNumpyArray()
             for batch_num in range(min(batches_count, max_batchs)):
                 batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
-                feed_dict = {self._model.input(): batch_data}
+                feed_dict = {self._model.input(): batch_data, self._model.isTraining(): False}
                 reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
             reconstructed = reconstructed.finalize()
             reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
@@ -104,7 +104,7 @@ class ContextEncoderNetwork(object):
                 break
             out_gaps.append(np.reshape(gaps, (-1)))
 
-            feed_dict = {self._model.input(): sides, self.gap_data: gaps}
+            feed_dict = {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): False}
             reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
         reconstructed = reconstructed.finalize()
         reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
@@ -155,7 +155,7 @@ class ContextEncoderNetwork(object):
                         print("End of queue!")
                         break
 
-                    feed_dict = {self._model.input(): sides, self.gap_data: gaps}
+                    feed_dict = {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): True}
                     sess.run(self._optimizer, feed_dict=feed_dict)  # , options=options, run_metadata=run_metadata)
 
                     # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
