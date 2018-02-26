@@ -85,9 +85,10 @@ class SequentialModel(object):
         assert(len(filter_shape) == 2), "filter must have 2 dimensions!"
         with tf.variable_scope(name, reuse=not isTraining):
             layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], input_channels, output_channels])
-            layers_biases = self._bias_variable([output_channels])
+            # layers_biases = self._bias_variable([output_channels])
             conv = tf.nn.conv2d(input_signal, layers_filters, strides=stride, padding=padding)
-            return conv + layers_biases
+            normalized = tf.layers.batch_normalization(conv, training=isTraining)
+            return normalized
 
     def _convLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, isTraining,
                    padding="SAME"):
@@ -109,10 +110,11 @@ class SequentialModel(object):
 
         with tf.variable_scope(name, reuse=not isTraining):
             layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], output_channels, input_channels])
-            layers_biases = self._bias_variable([output_channels])
+            # layers_biases = self._bias_variable([output_channels])
             deconv = tf.nn.conv2d_transpose(input_signal, layers_filters, strides=strides, padding=padding,
                                             output_shape=output_shape)
-            return deconv + layers_biases
+            normalized = tf.layers.batch_normalization(deconv, training=isTraining)
+            return normalized
 
     def _deconvLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, isTraining,
                      padding="SAME"):
@@ -124,9 +126,10 @@ class SequentialModel(object):
     def _linearLayer(self, input_signal, input_size, output_size, name, isTraining):
         with tf.variable_scope(name, reuse=not isTraining):
             weights = self._weight_variable([input_size, output_size])
-            biases = self._bias_variable(output_size)
-            linear_function = tf.matmul(input_signal, weights) + biases
-            return linear_function
+            # biases = self._bias_variable(output_size)
+            linear_function = tf.matmul(input_signal, weights)  # + biases
+            normalized = tf.layers.batch_normalization(linear_function, training=isTraining)
+            return normalized
 
     def _weight_variable(self, shape):
         return tf.get_variable('W', shape, initializer=tf.contrib.layers.xavier_initializer())
