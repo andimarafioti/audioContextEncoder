@@ -1,10 +1,13 @@
 import numpy as np
 import tensorflow as tf
 
+from tensorflow.python.client import timeline
+
 from utils.evaluationWriter import EvaluationWriter
 from utils.plotSummary import PlotSummary
 from utils.strechableNumpyArray import StrechableNumpyArray
 from utils.tfReader import TFReader
+from utils.timeLiner import TimeLiner
 
 __author__ = 'Andres'
 
@@ -23,7 +26,9 @@ class ContextEncoderNetwork(object):
         self._reconstructed_input_data = self._model.output()
 
         self._loss = self._loss_graph()
-        self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
 
     def euclideanNorm(self, tensor):
         squared = tf.square(tensor)
@@ -114,8 +119,8 @@ class ContextEncoderNetwork(object):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
-                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=40)
-                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=4000)
+                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=400)
+                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=40000)
 
                 saver = tf.train.Saver(max_to_keep=1000)
                 if restore_num:
@@ -138,6 +143,10 @@ class ContextEncoderNetwork(object):
                 trainReader.start()
                 evalWriter = EvaluationWriter(self._name + '.xlsx')
 
+                # options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                # run_metadata = tf.RunMetadata()
+                # many_runs_timeline = TimeLiner()
+
                 for step in range(1, int(num_steps)):
                     try:
                         sides, gaps = trainReader.dataOperation(session=sess)
@@ -147,12 +156,16 @@ class ContextEncoderNetwork(object):
                         break
 
                     feed_dict = {self._model.input(): sides, self.gap_data: gaps}
-                    sess.run(self._optimizer, feed_dict=feed_dict)
+                    sess.run(self._optimizer, feed_dict=feed_dict)  # , options=options, run_metadata=run_metadata)
+
+                    # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+                    # chrome_trace = fetched_timeline.generate_chrome_trace_format()
+                    # many_runs_timeline.update_timeline(chrome_trace)
 
                     if step % 40 == 0:
                         train_summ = sess.run(merged_summary, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 2000 == 0:
+                    if step % 5000 == 0:
                         reconstructed = sess.run(self._reconstructed_input_data, feed_dict=feed_dict)
                         plot_summary.plotSideBySide(gaps, reconstructed)
                         summaryToWrite = plot_summary.produceSummaryToWrite(sess)
@@ -163,6 +176,7 @@ class ContextEncoderNetwork(object):
 
             except KeyboardInterrupt:
                 pass
+            # many_runs_timeline.save('timeline_03_merged_%d_runs.json' % step)
             evalWriter.save()
             train_summ = sess.run([merged_summary], feed_dict=feed_dict)[0]
             writer.add_summary(train_summ, self._initial_model_num + step)
