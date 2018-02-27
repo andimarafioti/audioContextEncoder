@@ -40,14 +40,16 @@ class ContextEncoderNetwork(object):
             norm_orig = self.euclideanNorm(self.gap_data) / 5
             error = self.gap_data - self._reconstructed_input_data
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1) * (1 + 1 / norm_orig))
-            tf.summary.scalar("reconstruction_loss", reconstruction_loss)
+            rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
             lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
-            tf.summary.scalar("lossL2", lossL2)
+            l2_loss_summary = tf.summary.scalar("lossL2", lossL2)
 
             total_loss = tf.add_n([reconstruction_loss, lossL2])
-            tf.summary.scalar("total_loss", total_loss)
+            total_loss_summary = tf.summary.scalar("total_loss", total_loss)
+
+            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, total_loss_summary])
 
             return total_loss
 
@@ -119,8 +121,8 @@ class ContextEncoderNetwork(object):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
-                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=400)
-                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e6), num_epochs=40000)
+                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e5), num_epochs=400)
+                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e5), num_epochs=40000)
 
                 saver = tf.train.Saver(max_to_keep=1000)
                 if restore_num:
@@ -137,7 +139,9 @@ class ContextEncoderNetwork(object):
                 logs_path = '../logdir_real_cae/' + self._name  # write each run to a diff folder.
                 print("logs path:", logs_path)
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
-                merged_summary = tf.summary.merge_all()
+
+                valid_SNR = tf.placeholder(tf.float32, name="valid_SNR")
+                valid_SNR_summary = tf.summary.scalar("validation_SNR", valid_SNR)
                 plot_summary = PlotSummary('reconstruction')
 
                 trainReader.start()
@@ -163,22 +167,25 @@ class ContextEncoderNetwork(object):
                     # many_runs_timeline.update_timeline(chrome_trace)
 
                     if step % 40 == 0:
-                        train_summ = sess.run(merged_summary, feed_dict=feed_dict)
+                        train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 5000 == 0:
+                    if step % 50 == 0:
+                        print(step)
                         reconstructed = sess.run(self._reconstructed_input_data, feed_dict=feed_dict)
                         plot_summary.plotSideBySide(gaps, reconstructed)
                         summaryToWrite = plot_summary.produceSummaryToWrite(sess)
                         writer.add_summary(summaryToWrite, self._initial_model_num + step)
                         saver.save(sess, self.modelsPath(self._initial_model_num + step))
                         reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=256)
-                        evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
+                        step_valid_SNR = evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
+                        validSNRSummaryToWrite = sess.run(valid_SNR_summary, feed_dict={valid_SNR: step_valid_SNR})
+                        writer.add_summary(validSNRSummaryToWrite, self._initial_model_num + step)
 
             except KeyboardInterrupt:
                 pass
             # many_runs_timeline.save('timeline_03_merged_%d_runs.json' % step)
             evalWriter.save()
-            train_summ = sess.run([merged_summary], feed_dict=feed_dict)[0]
+            train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
             writer.add_summary(train_summ, self._initial_model_num + step)
             saver.save(sess, self.modelsPath(self._initial_model_num + step))
             self._initial_model_num += step

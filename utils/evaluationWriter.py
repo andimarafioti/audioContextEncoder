@@ -26,6 +26,7 @@ class EvaluationWriter(object):
         df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
         df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
         self._index += 3
+        return np.mean(SNRs)
 
     def _pavlovs_SNR(self, y_orig, y_inp):
         norm_y_orig = np.linalg.norm(y_orig) + 1e-10
