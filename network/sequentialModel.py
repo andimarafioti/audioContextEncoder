@@ -42,8 +42,9 @@ class SequentialModel(object):
             self.addConvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
 
     def addConvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
-        self._outputSetter(self._convLayer(self._output, filter_shape, input_channels, output_channels,
+        self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                            stride, name, padding))
+        self.addRelu()
 
     def addConvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
@@ -57,8 +58,9 @@ class SequentialModel(object):
             self.addDeconvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
 
     def addDeconvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
-        self._outputSetter(self._deconvLayer(self._output, filter_shape, input_channels, output_channels,
+        self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                              stride, name, padding))
+        self.addRelu()
 
     def addDeconvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
@@ -87,11 +89,6 @@ class SequentialModel(object):
             normalized = tf.layers.batch_normalization(conv, training=self._isTraining)
             return normalized
 
-    def _convLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
-        conv = self._convLayerWithoutNonLin(input_signal, filter_shape, input_channels, output_channels, stride,
-                                            name, padding)
-        return tf.nn.relu(conv)
-
     def _deconvLayerWithoutNonLin(self, input_signal, filter_shape, input_channels, output_channels, strides,
                                   name, padding="SAME"):
         assert(len(filter_shape) == 2), "filter must have 2 dimensions!"
@@ -108,11 +105,6 @@ class SequentialModel(object):
                                             output_shape=output_shape)
             normalized = tf.layers.batch_normalization(deconv, training=self._isTraining)
             return normalized
-
-    def _deconvLayer(self, input_signal, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
-        deconv = self._deconvLayerWithoutNonLin(input_signal, filter_shape, input_channels, output_channels,
-                                                stride, name)
-        return tf.nn.relu(deconv)
 
     def _linearLayer(self, input_signal, input_size, output_size, name):
         with tf.variable_scope(name, reuse=False):
