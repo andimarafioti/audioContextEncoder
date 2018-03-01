@@ -39,9 +39,9 @@ with tf.variable_scope("Encoder"):
                                 output_channels=output_channels, strides=strides, names=names)
 
 aModel.addReshape((batch_size, 1280))
-aModel.addFullyConnectedLayer(1280, 1280, 'Fully')
+aModel.addFullyConnectedLayer(1280, 896, 'Fully')
 aModel.addRelu()
-aModel.addReshape((batch_size, 1, 10, 128))
+aModel.addReshape((batch_size, 1, 7, 128))
 
 with tf.variable_scope("Decoder"):
     filter_widths = [(1, 5), (1, 9)]
@@ -51,11 +51,11 @@ with tf.variable_scope("Decoder"):
     names = ['First_Deconv', 'Second_Deconv']
     aModel.addSeveralDeconvLayers(filter_shapes=filter_widths, input_channels=input_channels,
                                   output_channels=output_channels, strides=strides, names=names)
-    aModel.addReshape((batch_size, 1, 5, 1024))
-    aModel.addDeconvLayerWithoutNonLin(filter_shape=(1, 3), input_channels=1024, output_channels=257,
+    aModel.addReshape((batch_size, 1, 7, 512))
+    aModel.addDeconvLayerWithoutNonLin(filter_shape=(1, 3), input_channels=512, output_channels=257,
                                        stride=(1, 1, 1, 1), name="Last_Deconv")
-    aModel.addReshape((batch_size, 5, 257))
+    aModel.addReshape((batch_size, 7, 257))
 
 aContextEncoderNetwork = StftTestContextEncoder(model=aModel, batch_size=batch_size, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-4, name='nat_mag_stft')
-aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6, restore_num=74000)
+                                               gap_length=gap_length, learning_rate=1e-4, name='nat_mag_stft_2')
+aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
