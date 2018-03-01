@@ -30,14 +30,24 @@ class ContextEncoderNetwork(object):
         with tf.control_dependencies(update_ops):
             self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
 
-    def euclideanNorm(self, tensor):
+    def _squaredEuclideanNorm(self, tensor):
         squared = tf.square(tensor)
         summed = tf.reduce_sum(squared, axis=1)
         return summed
 
+    def _log10(self, tensor):
+        numerator = tf.log(tensor)
+        denominator = tf.log(tf.constant(10, dtype=numerator.dtype))
+        return numerator / denominator
+
+    def _pavlovs_SNR(self, y_orig, y_inp):
+        norm_y_orig = self._squaredEuclideanNorm(y_orig)
+        norm_y_orig_minus_y_inp = self._squaredEuclideanNorm(y_orig - y_inp)
+        return 10 * self._log10((tf.abs(norm_y_orig ** 2)) / tf.abs((norm_y_orig_minus_y_inp ** 2)))
+
     def _loss_graph(self):
         with tf.variable_scope("Loss"):
-            norm_orig = self.euclideanNorm(self.gap_data) / 5
+            norm_orig = self._squaredEuclideanNorm(self.gap_data) / 5
             error = self.gap_data - self._reconstructed_input_data
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1) * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
@@ -117,12 +127,12 @@ class ContextEncoderNetwork(object):
 
         return reconstructed, out_gaps
 
-    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=0.4):
+    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=1):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
-                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(1e5), num_epochs=400)
-                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(1e5), num_epochs=40000)
+                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(2e5), num_epochs=400)
+                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(2e5), num_epochs=40000)
 
                 saver = tf.train.Saver(max_to_keep=1000)
                 if restore_num:
@@ -140,6 +150,8 @@ class ContextEncoderNetwork(object):
                 print("logs path:", logs_path)
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
+                train_SNR = tf.placeholder(tf.float32, name="train_SNR")
+                train_SNR_summary = tf.summary.scalar("training_SNR", train_SNR)
                 valid_SNR = tf.placeholder(tf.float32, name="valid_SNR")
                 valid_SNR_summary = tf.summary.scalar("validation_SNR", valid_SNR)
                 plot_summary = PlotSummary('reconstruction')
@@ -169,10 +181,13 @@ class ContextEncoderNetwork(object):
                     if step % 40 == 0:
                         train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 50 == 0:
-                        print(step)
+                    if step % 2000 == 0:
                         reconstructed = sess.run(self._reconstructed_input_data, feed_dict=feed_dict)
                         plot_summary.plotSideBySide(gaps, reconstructed)
+                        train_SNRs = tf.reduce_mean(self._pavlovs_SNR(gaps, reconstructed))
+                        step_train_SNR = sess.run(train_SNRs)
+                        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict={train_SNR: step_train_SNR})
+                        writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
                         summaryToWrite = plot_summary.produceSummaryToWrite(sess)
                         writer.add_summary(summaryToWrite, self._initial_model_num + step)
                         saver.save(sess, self.modelsPath(self._initial_model_num + step))
