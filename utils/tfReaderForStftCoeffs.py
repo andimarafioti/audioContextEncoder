@@ -18,8 +18,8 @@ class TFReaderForStftCoeffs(object):
 
     def dataOperation(self, session):
         try:
-            sides, gaps = session.run(self._audios)
-            return sides, gaps
+            stftCoeffs = session.run(self._audios)
+            return stftCoeffs
         except OutOfRangeError:
             raise StopIteration
 
