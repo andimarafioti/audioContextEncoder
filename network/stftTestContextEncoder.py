@@ -149,7 +149,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
                     if step % 40 == 0:
                         train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
                         writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 1 == 0:
+                    if step % 2000 == 0:
                         print(step)
                         reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)
                         plot_summary.plotSideBySide(out_gaps, reconstructed)
