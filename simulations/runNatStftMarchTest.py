@@ -28,12 +28,12 @@ with tf.name_scope('Energy_Spectogram'):
     aModel.setOutputTo(mag_stft)
 	
 with tf.variable_scope("Encoder"):
-    filter_widths = [(3, 33), (2, 9), (1, 3)]
+    filter_shapes = [(3, 33), (2, 9), (1, 3)]
     input_channels = [2, 32, 64]
     output_channels = [32, 64, 128]
     strides = [[1, 2, 4, 1], [1, 2, 4, 1], [1, 2, 4, 1]]
     names = ['First_Conv', 'Second_Conv', 'Third_Conv']
-    aModel.addSeveralConvLayers(filter_shapes=filter_widths, input_channels=input_channels,
+    aModel.addSeveralConvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
                                 output_channels=output_channels, strides=strides, names=names)
 
 aModel.addReshape((batch_size, 1280))
@@ -42,12 +42,12 @@ aModel.addRelu()
 aModel.addReshape((batch_size, 1, 7, 128))
 
 with tf.variable_scope("Decoder"):
-    filter_widths = [(1, 5), (1, 9)]
+    filter_shapes = [(1, 5), (1, 9)]
     input_channels = [128, 256]
     output_channels = [256, 128]
     strides = [[1, 1, 2, 1]] * len(input_channels)
     names = ['First_Deconv', 'Second_Deconv']
-    aModel.addSeveralDeconvLayers(filter_shapes=filter_widths, input_channels=input_channels,
+    aModel.addSeveralDeconvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
                                   output_channels=output_channels, strides=strides, names=names)
     aModel.addReshape((batch_size, 1, 7, 512))
     aModel.addDeconvLayerWithoutNonLin(filter_shape=(1, 3), input_channels=512, output_channels=257,
