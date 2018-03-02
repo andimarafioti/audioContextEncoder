@@ -63,11 +63,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
                 print(batch_num)
                 print("rec End of queue!")
                 break
-            signal_length = self._window_size - self._gap_length
-            first_half = sides[:, :signal_length // 2]
-            second_half = sides[:, signal_length // 2:]
-
-            reconstructed_signal = np.concatenate([first_half, gaps, second_half], axis=1)
+            reconstructed_signal = sess.run(self._reconstructedSignal, feed_dict={self._sides: sides, self.gap_data: gaps})
 
             gap_stft = self._stft[:, 15:15+7, :]
 
