@@ -23,10 +23,8 @@ with tf.name_scope('Energy_Spectogram'):
     stft = tf.contrib.signal.stft(signals=signal, frame_length=fft_frame_length, frame_step=fft_frame_step)
 
     sides_stft = tf.stack((stft[:, :15, :], stft[:, 15+7:, :]), axis=3)
-    print(sides_stft)
 
     mag_stft = tf.abs(sides_stft)    # (256, 15, 257, 2)
-    mag_stft = tf.reshape(mag_stft, (batch_size, 15, 257, 2))
     aModel.setOutputTo(mag_stft)
 	
 with tf.variable_scope("Encoder"):
