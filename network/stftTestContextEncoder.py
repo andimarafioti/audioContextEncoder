@@ -38,6 +38,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
             # norm_orig = self.euclideanNorm(self.gap_data) / 5
 
             error = mag_stft - self._reconstructed_input_data
+            # Nati comment: here you should use only one reduce sum function
             reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1))  # * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
