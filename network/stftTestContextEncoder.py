@@ -36,9 +36,12 @@ class StftTestContextEncoder(ContextEncoderNetwork):
             # num_ffts = int((self._gap_length - fft_frame_length) / fft_frame_step) + 1  # 5
 
             # norm_orig = self.euclideanNorm(self.gap_data) / 5
+            a = tf.sqrt(self._squaredEuclideanNorm(tf.sqrt(self._squaredEuclideanNorm(mag_stft)))) / tf.sqrt(
+                self._squaredEuclideanNorm(self.gap_data))
 
             error = mag_stft - self._reconstructed_input_data
-            reconstruction_loss = 0.5 * tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1))  # * (1 + 1 / norm_orig))
+            error_per_example = tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1), axis=1)
+            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example / a)  # * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
