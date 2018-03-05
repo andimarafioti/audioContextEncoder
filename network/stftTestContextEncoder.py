@@ -41,7 +41,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
 
             error = mag_stft - self._reconstructed_input_data
             # Nati comment: here you should use only one reduce sum function
-            error_per_example = tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1), axis=1)
+            error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2])
             reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example / a)  # * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
