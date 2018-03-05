@@ -40,6 +40,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
                 self._squaredEuclideanNorm(self.gap_data))
 
             error = mag_stft - self._reconstructed_input_data
+            # Nati comment: here you should use only one reduce sum function
             error_per_example = tf.reduce_sum(tf.reduce_sum(tf.square(error), axis=1), axis=1)
             reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example / a)  # * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
@@ -68,6 +69,8 @@ class StftTestContextEncoder(ContextEncoderNetwork):
                 break
             reconstructed_signal = sess.run(self._reconstructedSignal, feed_dict={self._sides: sides, self.gap_data: gaps})
 
+            # Nati comment: why is this step not done with reconstructed_signal?
+            # gap_stft = reconstructed_signal[:, 15:15+7, :]
             gap_stft = self._stft[:, 15:15+7, :]
 
             feed_dict = {self._model.input(): reconstructed_signal, self._model.isTraining(): False}
