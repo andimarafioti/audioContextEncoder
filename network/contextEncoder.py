@@ -116,7 +116,7 @@ class ContextEncoderNetwork(object):
                 break
             out_gaps.append(np.reshape(gaps, (-1)))
 
-            feed_dict = {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): False}
+            feed_dict = {self._model.input(): sides, self._model.isTraining(): False}
             reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
         reconstructed = reconstructed.finalize()
         reconstructed = np.reshape(reconstructed, (-1, self._gap_length))
