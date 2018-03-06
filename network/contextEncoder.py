@@ -43,7 +43,7 @@ class ContextEncoderNetwork(object):
     def _pavlovs_SNR(self, y_orig, y_inp):
         norm_y_orig = self._squaredEuclideanNorm(y_orig)
         norm_y_orig_minus_y_inp = self._squaredEuclideanNorm(y_orig - y_inp)
-        return 10 * self._log10((tf.abs(norm_y_orig)) / tf.abs((norm_y_orig_minus_y_inp)))
+        return 10 * self._log10((tf.abs(norm_y_orig)) / tf.abs(norm_y_orig_minus_y_inp))
 
     def _loss_graph(self):
         with tf.variable_scope("Loss"):
