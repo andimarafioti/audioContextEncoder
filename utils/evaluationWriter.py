@@ -15,9 +15,7 @@ class EvaluationWriter(object):
         fake_a = reconstructed
         gap = original_gaps
 
-        SNRs = np.zeros((len(fake_a),))
-        for index, signal in enumerate(fake_a):
-            SNRs[index] = self._pavlovs_SNR(gap[index], fake_a[index])
+        SNRs = self._pavlovs_SNR(gap, fake_a)
 
         norm_orig = self._squaredEuclideanNorm(gap) / 5
         error = gap - fake_a
@@ -29,9 +27,9 @@ class EvaluationWriter(object):
         return np.mean(SNRs)
 
     def _pavlovs_SNR(self, y_orig, y_inp):
-        norm_y_orig = np.linalg.norm(y_orig) + 1e-10
-        norm_y_orig_minus_y_inp = np.linalg.norm(y_orig - y_inp)
-        return 10 * np.log10((abs(norm_y_orig ** 2)) / abs((norm_y_orig_minus_y_inp ** 2)))
+        norm_y_orig = self._squaredEuclideanNorm(y_orig)
+        norm_y_orig_minus_y_inp = self._squaredEuclideanNorm(y_orig - y_inp)
+        return 10 * np.log10(norm_y_orig / norm_y_orig_minus_y_inp)
 
     def _squaredEuclideanNorm(self, vector):
         squared = np.square(vector)
