@@ -36,13 +36,12 @@ class StftTestContextEncoder(ContextEncoderNetwork):
             # num_ffts = int((self._gap_length - fft_frame_length) / fft_frame_step) + 1  # 5
 
             # norm_orig = self.euclideanNorm(self.gap_data) / 5
-            a = tf.sqrt(self._squaredEuclideanNorm(tf.sqrt(self._squaredEuclideanNorm(mag_stft)))) / tf.sqrt(
-                self._squaredEuclideanNorm(self.gap_data))
+            # a = self._squaredEuclideanNorm(tf.sqrt(self._squaredEuclideanNorm(mag_stft))) / self._squaredEuclideanNorm(self.gap_data)
 
             error = mag_stft - self._reconstructed_input_data
             # Nati comment: here you should use only one reduce sum function
             error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2])
-            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example / a)  # * (1 + 1 / norm_orig))
+            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example)  # / a)  # * (1 + 1 / norm_orig))
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
@@ -55,6 +54,28 @@ class StftTestContextEncoder(ContextEncoderNetwork):
             self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, total_loss_summary])
 
             return total_loss
+
+    def reconstructAudio(self, audios, model_num=None, max_batchs=200):
+        with tf.Session() as sess:
+            if model_num is not None:
+                path = self.modelsPath(model_num)
+            else:
+                path = self.modelsPath(self._initial_model_num)
+            saver = tf.train.Saver()
+            saver.restore(sess, path)
+            print("Model restored.")
+
+            batches_count = int(len(audios) / self._batch_size)
+
+            reconstructed = StrechableNumpyArray()
+            for batch_num in range(min(batches_count, max_batchs)):
+                batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
+                feed_dict = {self._model.input(): batch_data, self._model.isTraining(): False}
+                reconstructed.append(np.reshape(sess.run(self._reconstructed_input_data, feed_dict=feed_dict), (-1)))
+            reconstructed = reconstructed.finalize()
+            reconstructed = np.reshape(reconstructed, (-1, 7, 257))
+            istft_reconstructed = sess.run(self._reconstructedAudio, feed_dict={self._specgram: reconstructed})
+            return reconstructed, istft_reconstructed
 
     def _reconstruct(self, sess, data_reader, max_steps):
         data_reader.start()
