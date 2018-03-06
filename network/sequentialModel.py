@@ -44,7 +44,7 @@ class SequentialModel(object):
     def addConvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                            stride, name, padding))
-        self.addDropout()
+        self.addDropout(0.1)
         self.addRelu()
 
     def addConvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
@@ -61,7 +61,7 @@ class SequentialModel(object):
     def addDeconvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                              stride, name, padding))
-        self.addDropout()
+        self.addDropout(0.1)
         self.addRelu()
 
     def addDeconvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
@@ -73,9 +73,10 @@ class SequentialModel(object):
 
     def addFullyConnectedLayer(self, input_size, output_size, name):
         self._outputSetter(self._linearLayer(self._output, input_size, output_size, name))
+        self.addDropout(0.5)
 
-    def addDropout(self, keep_prob=0.5):
-        dropout = tf.layers.dropout(self._output, rate=keep_prob, training=self._isTraining)
+    def addDropout(self, rate):
+        dropout = tf.layers.dropout(self._output, rate=rate, training=self._isTraining)
         self._outputSetter(dropout)
 
     def addRelu(self):
