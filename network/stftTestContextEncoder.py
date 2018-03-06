@@ -92,7 +92,7 @@ class StftTestContextEncoder(ContextEncoderNetwork):
 
             # Nati comment: why is this step not done with reconstructed_signal?
             # gap_stft = reconstructed_signal[:, 15:15+7, :]
-            gap_stft = self._stft[:, 15:15+7, :]
+            gap_stft = tf.abs(self._stft[:, 15:15+7, :])
 
             feed_dict = {self._model.input(): reconstructed_signal, self._model.isTraining(): False}
             reconstructed_input, original = sess.run([self._reconstructed_input_data, gap_stft], feed_dict=feed_dict)
