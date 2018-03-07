@@ -30,9 +30,9 @@ class ContextEncoderNetwork(object):
         with tf.control_dependencies(update_ops):
             self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
 
-    def _squaredEuclideanNorm(self, tensor):
+    def _squaredEuclideanNorm(self, tensor, onAxis=[1]):
         squared = tf.square(tensor)
-        summed = tf.reduce_sum(squared, axis=1)
+        summed = tf.reduce_sum(squared, axis=onAxis)
         return summed
 
     def _log10(self, tensor):
@@ -40,9 +40,9 @@ class ContextEncoderNetwork(object):
         denominator = tf.log(tf.constant(10, dtype=numerator.dtype))
         return numerator / denominator
 
-    def _pavlovs_SNR(self, y_orig, y_inp):
-        norm_y_orig = self._squaredEuclideanNorm(y_orig)
-        norm_y_orig_minus_y_inp = self._squaredEuclideanNorm(y_orig - y_inp)
+    def _pavlovs_SNR(self, y_orig, y_inp, onAxis=[1]):
+        norm_y_orig = self._squaredEuclideanNorm(y_orig, onAxis)
+        norm_y_orig_minus_y_inp = self._squaredEuclideanNorm(y_orig - y_inp, onAxis)
         return 10 * self._log10((tf.abs(norm_y_orig)) / tf.abs(norm_y_orig_minus_y_inp))
 
     def _loss_graph(self):
