@@ -71,5 +71,5 @@ model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftTestContextEncoder(model=aModel, batch_size=batch_size, stft=stft, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-4, name='nat_mag_stft_5_')
+                                               gap_length=gap_length, learning_rate=1e-4, name='nat_mag_real_imag_1_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
