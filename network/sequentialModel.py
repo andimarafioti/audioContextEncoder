@@ -79,6 +79,9 @@ class SequentialModel(object):
     def addRelu(self):
         self._outputSetter(tf.nn.relu(self._output))
 
+    def addBatchNormalization(self):
+        self._outputSetter(tf.layers.batch_normalization(self._output, training=self._isTraining))
+
     def _outputSetter(self, value):
         self._output = value
         self._description += "\n" + str(value)
@@ -90,8 +93,7 @@ class SequentialModel(object):
             layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], input_channels, output_channels])
             # layers_biases = self._bias_variable([output_channels])
             conv = tf.nn.conv2d(input_signal, layers_filters, strides=stride, padding=padding)
-            normalized = tf.layers.batch_normalization(conv, training=self._isTraining)
-            return normalized
+            return conv
 
     def _deconvLayerWithoutNonLin(self, input_signal, filter_shape, input_channels, output_channels, strides,
                                   name, padding="SAME"):
@@ -107,16 +109,14 @@ class SequentialModel(object):
             # layers_biases = self._bias_variable([output_channels])
             deconv = tf.nn.conv2d_transpose(input_signal, layers_filters, strides=strides, padding=padding,
                                             output_shape=output_shape)
-            normalized = tf.layers.batch_normalization(deconv, training=self._isTraining)
-            return normalized
+            return deconv
 
     def _linearLayer(self, input_signal, input_size, output_size, name):
         with tf.variable_scope(name, reuse=False):
             weights = self._weight_variable([input_size, output_size])
             # biases = self._bias_variable(output_size)
             linear_function = tf.matmul(input_signal, weights)  # + biases
-            normalized = tf.layers.batch_normalization(linear_function, training=self._isTraining)
-            return normalized
+            return linear_function
 
     def _weight_variable(self, shape):
         return tf.get_variable('W', shape, initializer=tf.contrib.layers.xavier_initializer())
