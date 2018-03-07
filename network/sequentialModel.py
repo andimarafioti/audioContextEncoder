@@ -40,6 +40,8 @@ class SequentialModel(object):
         for filter_shape, input_channels, output_channels, stride, name in \
                 zip(filter_shapes, input_channels, output_channels, strides, names):
             self.addConvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
+            self.addBatchNormalization()
+            self.addDropout(0.1)
 
     def addConvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
@@ -56,6 +58,8 @@ class SequentialModel(object):
         for filter_shape, input_channels, output_channels, stride, name in \
                 zip(filter_shapes, input_channels, output_channels, strides, names):
             self.addDeconvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
+            self.addBatchNormalization()
+            self.addDropout(0.1)
 
     def addDeconvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
