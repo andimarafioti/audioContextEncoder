@@ -26,7 +26,7 @@ class EvaluationWriter(object):
     def evaluateImages(self, reconstructed, original_gaps, step):
         assert (original_gaps.shape == reconstructed.shape)
 
-        SNRs = self._pavlovs_SNR(original_gaps, reconstructed, onAxis=(1, 2))
+        SNRs = self._pavlovs_SNR(original_gaps, reconstructed, onAxis=(1, 2, 3))
 
         norm_orig = self._squaredEuclideanNorm(original_gaps) / 5
         error = original_gaps - reconstructed
