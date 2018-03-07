@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 
 from network.sequentialModel import SequentialModel
-from network.stftTestContextEncoder import StftTestContextEncoder
+from network.stftMagContextEncoder import StftTestContextEncoder
 
 __author__ = 'Andres'
 
@@ -27,7 +27,7 @@ with tf.name_scope('Energy_Spectogram'):
 
     mag_stft = tf.abs(sides_stft)    # (256, 15, 257, 2)
     aModel.setOutputTo(mag_stft)
-	
+
 with tf.variable_scope("Encoder"):
     filter_shapes = [(7, 89), (3, 17), (2, 6), (1, 5), (1, 3)]
     input_channels = [2, 32, 64, 128, 128]
