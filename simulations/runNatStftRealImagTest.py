@@ -40,6 +40,8 @@ with tf.variable_scope("Encoder"):
 aModel.addReshape((batch_size, 3200))
 aModel.addFullyConnectedLayer(3200, 2048, 'Fully')
 aModel.addRelu()
+aModel.addBatchNormalization()
+aModel.addDropout(0.3)
 aModel.addReshape((batch_size, 8, 8, 32))
 
 with tf.variable_scope("Decoder"):
@@ -54,6 +56,8 @@ with tf.variable_scope("Decoder"):
     aModel.addReshape((batch_size, 8, 257, 128))
     aModel.addDeconvLayer(filter_shape=(3, 33), input_channels=128, output_channels=7, stride=(1, 2, 2, 1),
                           name='Third_deconv')
+    aModel.addBatchNormalization()
+    aModel.addDropout(0.1)
 
     aModel.addReshape((batch_size, 7, 257, 32))
 
