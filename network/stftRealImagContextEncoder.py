@@ -40,8 +40,8 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             real_reconstruction_loss = 0.5 * tf.reduce_sum(real_error_per_example * (1 + 1 / real_norm_orig))
             imag_reconstruction_loss = 0.5 * tf.reduce_sum(imag_error_per_example * (1 + 1 / imag_norm_orig))
 
-            real_rec_loss_summary = tf.summary.scalar("reconstruction_loss", real_reconstruction_loss)
-            imag_rec_loss_summary = tf.summary.scalar("reconstruction_loss", imag_reconstruction_loss)
+            real_rec_loss_summary = tf.summary.scalar("real_reconstruction_loss", real_reconstruction_loss)
+            imag_rec_loss_summary = tf.summary.scalar("imag_reconstruction_loss", imag_reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
             lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
