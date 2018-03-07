@@ -30,7 +30,7 @@ class EvaluationWriter(object):
 
         norm_orig = self._squaredEuclideanNorm(original_gaps) / 5
         error = original_gaps - reconstructed
-        reconstruction_loss = 0.5 * np.sum(np.square(error), axis=1) * (1 + 1 / norm_orig)
+        reconstruction_loss = 0.5 * np.sum(np.square(error), axis=(1, 2, 3)) * (1 + 1 / norm_orig)
 
         df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
         df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
