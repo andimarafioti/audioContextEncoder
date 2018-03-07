@@ -82,6 +82,17 @@ class SequentialModel(object):
     def addBatchNormalization(self):
         self._outputSetter(tf.layers.batch_normalization(self._output, training=self._isTraining))
 
+    def addSTFT(self, frame_length, frame_step):
+        with tf.name_scope('stft'):
+            self._outputSetter(tf.contrib.signal.stft(signals=self._output,
+                                                      frame_length=frame_length, frame_step=frame_step))
+
+    def divideComplexOutputIntoRealAndImaginaryParts(self):
+        real_part = tf.real(self._output)
+        imag_part = tf.imag(self._output)
+        stacked = tf.concat([real_part, imag_part], axis=-1, name='divideComplexOutputIntoRealAndImaginaryParts')
+        self._outputSetter(stacked)
+
     def _outputSetter(self, value):
         self._output = value
         self._description += "\n" + str(value)
