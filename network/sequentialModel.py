@@ -94,7 +94,7 @@ class SequentialModel(object):
     def divideComplexOutputIntoRealAndImaginaryParts(self):
         real_part = tf.real(self._output)
         imag_part = tf.imag(self._output)
-        stacked = tf.concat([real_part, imag_part], axis=-1, name='divideComplexOutputIntoRealAndImaginaryParts')
+        stacked = tf.stack([real_part, imag_part], axis=-1, name='divideComplexOutputIntoRealAndImaginaryParts')
         self._outputSetter(stacked)
 
     def _outputSetter(self, value):

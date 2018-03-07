@@ -20,12 +20,13 @@ fft_frame_step = 128
 aModel = SequentialModel(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 aModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
-aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 15, 257, 4)
+aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 37, 257, 2)
 
 with tf.name_scope('Remove_gap_stft'):
     stft = aModel.output()
-    sides_stft = tf.stack((stft[:, :15, :], stft[:, 15+7:, :]), axis=3)  # (256, 15, 257, 2)
+    sides_stft = tf.concat((stft[:, :15, :, :], stft[:, 15+7:, :, :]), axis=3)  # (256, 15, 257, 4)
     aModel.setOutputTo(sides_stft)
+print(aModel.output())
 
 with tf.variable_scope("Encoder"):
     filter_shapes = [(7, 89), (3, 17), (2, 6), (1, 5), (1, 3)]
