@@ -28,7 +28,7 @@ class EvaluationWriter(object):
 
         SNRs = self._pavlovs_SNR(original_gaps, reconstructed, onAxis=(1, 2, 3))
 
-        norm_orig = self._squaredEuclideanNorm(original_gaps) / 5
+        norm_orig = self._squaredEuclideanNorm(original_gaps, onAxis=(1, 2, 3)) / 5
         error = original_gaps - reconstructed
         reconstruction_loss = 0.5 * np.sum(np.square(error), axis=(1, 2, 3)) * (1 + 1 / norm_orig)
 
