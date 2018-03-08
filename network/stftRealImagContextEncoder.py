@@ -16,6 +16,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                                                          name)
         self._sides = tf.placeholder(tf.float32, shape=(batch_size, self._window_size - self._gap_length), name='sides')
         self._reconstructedSignal = self._reconstructSignal(self._sides, self.gap_data)
+        self._SNR = tf.reduce_mean(self._pavlovs_SNR(self._stft[:, 15:15 + 7, :], self._reconstructed_input_data))
 
     def _reconstructSignal(self, sides, gaps):
         signal_length = self._window_size - self._gap_length
@@ -167,10 +168,9 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                         writer.add_summary(train_summ, self._initial_model_num + step)
                     if step % 2000 == 0:
                         print(step)
-                        reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)
+                        reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)  # WRONG
                         # plot_summary.plotSideBySide(out_gaps, reconstructed)
-                        train_SNRs = tf.reduce_mean(self._pavlovs_SNR(out_gaps, reconstructed, onAxis=[1, 2, 3]))
-                        step_train_SNR = sess.run(train_SNRs)
+                        step_train_SNR = sess.run(self._SNR, feed_dict=feed_dict)
                         trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict={train_SNR: step_train_SNR})
                         writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
                         #summaryToWrite = plot_summary.produceSummaryToWrite(sess)
