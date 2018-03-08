@@ -49,7 +49,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
             l2_loss_summary = tf.summary.scalar("lossL2", lossL2)
 
-            total_loss = tf.add_n([rec_loss_summary, lossL2])
+            total_loss = tf.add_n([reconstruction_loss, lossL2])
             total_loss_summary = tf.summary.scalar("total_loss", total_loss)
 
             self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, norm_orig_summary, total_loss_summary])
