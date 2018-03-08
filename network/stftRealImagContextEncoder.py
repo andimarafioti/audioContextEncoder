@@ -16,7 +16,9 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                                                          name)
         self._sides = tf.placeholder(tf.float32, shape=(batch_size, self._window_size - self._gap_length), name='sides')
         self._reconstructedSignal = self._reconstructSignal(self._sides, self.gap_data)
-        self._SNR = tf.reduce_mean(self._pavlovs_SNR(self._stft[:, 15:15 + 7, :], self._reconstructed_input_data))
+
+        self._SNR = tf.reduce_mean(self._pavlovs_SNR(self._stft[:, 15:15 + 7, :, :], self._reconstructed_input_data,
+                                                     onAxis=[1, 2, 3]))
 
     def _reconstructSignal(self, sides, gaps):
         signal_length = self._window_size - self._gap_length
@@ -31,14 +33,15 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             gap_stft = self._stft[:, 15:15 + 7, :, :]
 
             norm_orig = self._squaredEuclideanNorm(gap_stft, onAxis=[1, 2, 3])
-            norm_orig = tf.summary.scalar("norm_orig", norm_orig)
+            norm_orig_summary = tf.summary.scalar("norm_orig", norm_orig)
 
             error = gap_stft - self._reconstructed_input_data
             # Nati comment: here you should use only one reduce sum function
             error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2, 3])
 
+            scale = tf.constant(1e-2, dtype=tf.float32)
             reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example *
-                                                      (1 + 5 / (norm_orig+tf.constant(1e-2, dtype=norm_orig.dtype))))
+                                                      (1 + 5 / (norm_orig+scale)))
 
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
@@ -49,7 +52,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             total_loss = tf.add_n([rec_loss_summary, lossL2])
             total_loss_summary = tf.summary.scalar("total_loss", total_loss)
 
-            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, norm_orig, total_loss_summary])
+            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, norm_orig_summary, total_loss_summary])
 
             return total_loss
 
@@ -164,7 +167,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                         writer.add_summary(train_summ, self._initial_model_num + step)
                     if step % 2000 == 0:
                         print(step)
-                        reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)  # WRONG
+                        #reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)  # WRONG
                         # plot_summary.plotSideBySide(out_gaps, reconstructed)
                         trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict=feed_dict)
                         writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
