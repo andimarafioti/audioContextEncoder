@@ -30,29 +30,25 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
         with tf.variable_scope("Loss"):
             gap_stft = self._stft[:, 15:15 + 7, :, :]
 
-            real_norm_orig = self._squaredEuclideanNorm(gap_stft[:, :, :, 0], onAxis=[1, 2]) / 5
-            imag_norm_orig = self._squaredEuclideanNorm(gap_stft[:, :, :, 1], onAxis=[1, 2]) / 5
+            norm_orig = self._squaredEuclideanNorm(gap_stft, onAxis=[1, 2, 3])
+            norm_orig = tf.summary.scalar("norm_orig", norm_orig)
 
             error = gap_stft - self._reconstructed_input_data
             # Nati comment: here you should use only one reduce sum function
-            real_error_per_example = tf.reduce_sum(tf.square(error[:, :, :, 0]), axis=[1, 2])
-            imag_error_per_example = tf.reduce_sum(tf.square(error[:, :, :, 1]), axis=[1, 2])
+            error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2, 3])
 
-            real_reconstruction_loss = 0.5 * tf.reduce_sum(real_error_per_example * (1 + 1 / real_norm_orig))
-            imag_reconstruction_loss = 0.5 * tf.reduce_sum(imag_error_per_example * (1 + 1 / imag_norm_orig))
+            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example * (1 + 5 / (norm_orig+1e-8)))
 
-            real_rec_loss_summary = tf.summary.scalar("real_reconstruction_loss", real_reconstruction_loss)
-            imag_rec_loss_summary = tf.summary.scalar("imag_reconstruction_loss", imag_reconstruction_loss)
+            rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
             trainable_vars = tf.trainable_variables()
             lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
             l2_loss_summary = tf.summary.scalar("lossL2", lossL2)
 
-            total_loss = tf.add_n([real_reconstruction_loss, imag_reconstruction_loss, lossL2])
+            total_loss = tf.add_n([rec_loss_summary, lossL2])
             total_loss_summary = tf.summary.scalar("total_loss", total_loss)
 
-            self._lossSummaries = tf.summary.merge([real_rec_loss_summary, imag_rec_loss_summary,
-                                                    l2_loss_summary, total_loss_summary])
+            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, norm_orig, total_loss_summary])
 
             return total_loss
 
@@ -133,8 +129,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                 print("logs path:", logs_path)
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
-                train_SNR = tf.placeholder(tf.float32, name="train_SNR")
-                train_SNR_summary = tf.summary.scalar("training_SNR", train_SNR)
+                train_SNR_summary = tf.summary.scalar("training_SNR", self._SNR)
                 valid_SNR = tf.placeholder(tf.float32, name="valid_SNR")
                 valid_SNR_summary = tf.summary.scalar("validation_SNR", valid_SNR)
                 plot_summary = PlotSummary('reconstruction')
@@ -170,8 +165,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
                         print(step)
                         reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)  # WRONG
                         # plot_summary.plotSideBySide(out_gaps, reconstructed)
-                        step_train_SNR = sess.run(self._SNR, feed_dict=feed_dict)
-                        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict={train_SNR: step_train_SNR})
+                        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict=feed_dict)
                         writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
                         #summaryToWrite = plot_summary.produceSummaryToWrite(sess)
                         #writer.add_summary(summaryToWrite, self._initial_model_num + step)
