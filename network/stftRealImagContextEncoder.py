@@ -37,7 +37,8 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             # Nati comment: here you should use only one reduce sum function
             error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2, 3])
 
-            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example * (1 + 5 / (norm_orig+1e-8)))
+            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example *
+                                                      (1 + 5 / (norm_orig+tf.constant(1e-2, dtype=norm_orig.dtype))))
 
             rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
 
