@@ -33,7 +33,7 @@ class StftRealImagContextEncoder(ContextEncoderNetwork):
             gap_stft = self._stft[:, 15:15 + 7, :, :]
 
             norm_orig = self._squaredEuclideanNorm(gap_stft, onAxis=[1, 2, 3])
-            norm_orig_summary = tf.summary.scalar("norm_orig", norm_orig)
+            norm_orig_summary = tf.summary.scalar("norm_orig", tf.reduce_min(norm_orig))
 
             error = gap_stft - self._reconstructed_input_data
             # Nati comment: here you should use only one reduce sum function
