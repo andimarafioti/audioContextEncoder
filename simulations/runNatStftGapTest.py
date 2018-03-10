@@ -32,10 +32,13 @@ with tf.name_scope('Remove_gap_before_stft'):
     signal = aModel.output()
     left_side = signal[:, :2048]
     right_side = signal[:, 2048+1024:]
-
+    
+    # This is strange. The window is 5K samples long, the hole 1024 and the 0 pading 384.
+    # Unless signal in in spectrogram. In that case, the code is not very clear. Maybe consider adding comments.
     left_side_padded = tf.concat((left_side, tf.zeros((batch_size, 384))), axis=1)
     right_side_padded = tf.concat((tf.zeros((batch_size, 384)), right_side), axis=1)
 
+    # If you pad them with 0, maybe you also stack them allong axis 2 (one after the other.)
     signal_without_gap = tf.stack((left_side_padded, right_side_padded), axis=1)  # (256, 2, 2432)
     aModel.setOutputTo(signal_without_gap)
 
