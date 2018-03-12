@@ -54,33 +54,28 @@ class StftGapContextEncoder(ContextEncoderNetwork):
 
             return total_loss
 
-    # def reconstructAudio(self, audios, model_num=None, max_batchs=200):
-    #     with tf.Session() as sess:
-    #         if model_num is not None:
-    #             path = self.modelsPath(model_num)
-    #         else:
-    #             path = self.modelsPath(self._initial_model_num)
-    #         saver = tf.train.Saver()
-    #         saver.restore(sess, path)
-    #         print("Model restored.")
-    #
-    #         batches_count = int(len(audios) / self._batch_size)
-    #
-    #         reconstructed = StrechableNumpyArray()
-    #         original_stfts = StrechableNumpyArray()
-    #         for batch_num in range(min(batches_count, max_batchs)):
-    #             batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
-    #             feed_dict = {self._model.input(): batch_data, self._model.isTraining(): False}
-    #             reconstructed_input, original_stft = sess.run([self._reconstructed_input_data, self._stft],
-    #                                                      feed_dict=feed_dict)
-    #             original_stfts.append(np.reshape(original_stft, (-1)))
-    #             reconstructed.append(np.reshape(reconstructed_input, (-1)))
-    #         reconstructed = reconstructed.finalize()
-    #         reconstructed_stft = np.reshape(reconstructed, (-1, 37, 257))
-    #         original_stfts = original_stfts.finalize()
-    #         original_stft = np.reshape(original_stfts, (-1, 7, 257, 2))
-    #
-    #         return reconstructed_stft, original_stft
+    def reconstructAudio(self, audios, model_num=None, max_batchs=200):
+        with tf.Session() as sess:
+            if model_num is not None:
+                path = self.modelsPath(model_num)
+            else:
+                path = self.modelsPath(self._initial_model_num)
+            saver = tf.train.Saver()
+            saver.restore(sess, path)
+            print("Model restored.")
+
+            batches_count = int(len(audios) / self._batch_size)
+
+            reconstructed = StrechableNumpyArray()
+            for batch_num in range(min(batches_count, max_batchs)):
+                batch_data = audios[batch_num * self._batch_size:batch_num * self._batch_size + self._batch_size]
+                feed_dict = {self._model.input(): batch_data, self._model.isTraining(): False}
+                reconstructed_input = sess.run([self._reconstructed_input_data],
+                                                         feed_dict=feed_dict)
+                reconstructed.append(np.reshape(reconstructed_input, (-1)))
+            reconstructed = reconstructed.finalize()
+            reconstructed_stft = np.reshape(reconstructed, (-1, 11, 257, 2))
+            return reconstructed_stft
 
     def _reconstruct(self, sess, data_reader, max_steps):
         data_reader.start()
