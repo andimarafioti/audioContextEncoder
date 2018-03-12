@@ -74,7 +74,9 @@ class StftGapContextEncoder(ContextEncoderNetwork):
                                                          feed_dict=feed_dict)
                 reconstructed.append(np.reshape(reconstructed_input, (-1)))
             reconstructed = reconstructed.finalize()
-            reconstructed_stft = np.reshape(reconstructed, self._target_model.output().shape.as_list())
+            output_shape = self._target_model.output().shape.as_list()
+            output_shape[0] = -1
+            reconstructed_stft = np.reshape(reconstructed, output_shape)
             return reconstructed_stft
 
     def _reconstruct(self, sess, data_reader, max_steps):
@@ -98,10 +100,12 @@ class StftGapContextEncoder(ContextEncoderNetwork):
             out_gaps.append(np.reshape(original, (-1)))
             reconstructed.append(np.reshape(reconstructed_input, (-1)))
 
+        output_shape = self._target_model.output().shape.as_list()
+        output_shape[0] = -1
         reconstructed = reconstructed.finalize()
-        reconstructed = np.reshape(reconstructed, self._target_model.output().shape.as_list())
+        reconstructed = np.reshape(reconstructed, output_shape)
         out_gaps = out_gaps.finalize()
-        out_gaps = np.reshape(out_gaps, self._target_model.output().shape.as_list())
+        out_gaps = np.reshape(out_gaps, output_shape)
 
         data_reader.finish()
 
