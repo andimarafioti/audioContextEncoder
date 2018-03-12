@@ -91,6 +91,9 @@ class SequentialModel(object):
             self._outputSetter(tf.contrib.signal.stft(signals=self._output,
                                                       frame_length=frame_length, frame_step=frame_step))
 
+    def addAbs(self):
+        self._outputSetter(tf.abs(self._output))
+
     def divideComplexOutputIntoRealAndImaginaryParts(self):
         real_part = tf.real(self._output)
         imag_part = tf.imag(self._output)
