@@ -1,3 +1,8 @@
+"""
+This trained for 85k steps (24hs) with a learning rate of 1e-3 and didn't learn anything.
+
+"""
+
 import tensorflow as tf
 from tensorflow.contrib import slim
 
