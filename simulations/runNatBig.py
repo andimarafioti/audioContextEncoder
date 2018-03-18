@@ -13,8 +13,12 @@ from network.stftGapContextEncoder import StftGapContextEncoder
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
-valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
+if 'omenx' in socket.gethostname():
+    train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
+    valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
+else:
+    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
+    valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
 
 window_size = 5120
 gap_length = 1024
