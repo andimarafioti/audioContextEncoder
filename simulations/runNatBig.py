@@ -3,7 +3,9 @@ import os
 sys.path.insert(0, '../')
 import tensorflow as tf
 from tensorflow.contrib import slim
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+import socket
+if 'omenx' in socket.gethostname():
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 from network.sequentialModel import SequentialModel
 from network.stftGapContextEncoder import StftGapContextEncoder
