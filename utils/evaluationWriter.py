@@ -1,4 +1,4 @@
-import pandas as pd
+# import pandas as pd
 import numpy as np
 
 __author__ = 'Andres'
@@ -18,8 +18,8 @@ class EvaluationWriter(object):
         error = original_gaps - reconstructed
         reconstruction_loss = 0.5 * np.sum(np.square(error), axis=1) * (1 + 1 / norm_orig)
 
-        df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
-        df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
+        # df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
+        # df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
         self._index += 3
         return np.mean(SNRs)
 
@@ -32,8 +32,8 @@ class EvaluationWriter(object):
         error = original_gaps - reconstructed
         reconstruction_loss = 0.5 * np.sum(np.square(error), axis=(1, 2, 3)) * (1 + 1 / norm_orig)
 
-        df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
-        df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
+        # df = pd.DataFrame({'SNRs ' + str(step): SNRs, 'reconstruction_loss ' + str(step): reconstruction_loss})
+        # df.describe().to_excel(self._writer, sheet_name='general', startcol=self._index, index=not self._index)
         self._index += 3
         return np.mean(SNRs)
 
