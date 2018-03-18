@@ -6,7 +6,7 @@ __author__ = 'Andres'
 
 class EvaluationWriter(object):
     def __init__(self, excelFileName):
-        self._writer = pd.ExcelWriter(excelFileName)
+        # self._writer = pd.ExcelWriter(excelFileName)
         self._index = 0
 
     def evaluate(self, reconstructed, original_gaps, step):
