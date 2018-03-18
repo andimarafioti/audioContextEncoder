@@ -48,4 +48,5 @@ class EvaluationWriter(object):
         return summed
 
     def save(self):
-        self._writer.save()
+        pass
+        # self._writer.save()
