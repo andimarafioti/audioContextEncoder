@@ -1,5 +1,11 @@
+import sys
+import os
+sys.path.insert(0, '../')
 import tensorflow as tf
 from tensorflow.contrib import slim
+import socket
+if 'omenx' in socket.gethostname():
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 from network.sequentialModel import SequentialModel
 from network.stftGapContextEncoder import StftGapContextEncoder
@@ -7,8 +13,13 @@ from network.stftGapContextEncoder import StftGapContextEncoder
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
-valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
+if 'omenx' in socket.gethostname():
+    train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
+    valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
+else:
+    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
+    valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
+
 
 window_size = 5120
 gap_length = 1024
