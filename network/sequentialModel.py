@@ -42,10 +42,25 @@ class SequentialModel(object):
             self.addConvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
             self.addBatchNormalization()
 
+    def addSeveralConvLayersWithSkip(self, filter_shapes, input_channels, output_channels, strides, names, padding="SAME"):
+        assert (len(filter_shapes) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
+            "filter_widths, input_channels, output_channels, strides, and names should all have the same length"
+        for filter_shape, input_channels, output_channels, stride, name in \
+                zip(filter_shapes, input_channels, output_channels, strides, names):
+            self.addConvLayerWithSkip(filter_shape, input_channels, output_channels, stride, name, padding)
+            self.addBatchNormalization()
+
     def addConvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                            stride, name, padding))
         self.addRelu()
+
+    def addConvLayerWithSkip(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
+        temp1 = self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, input_channels,
+                                          [1,1,1,1], name+'_1', "SAME")
+        self._outputSetter(tf.nn.relu(temp1) + self._output)
+        self.addConvLayer(filter_shape, input_channels, output_channels, stride, name+'_2', padding)
+
 
     def addConvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
@@ -59,10 +74,24 @@ class SequentialModel(object):
             self.addDeconvLayer(filter_shape, input_channels, output_channels, stride, name, padding)
             self.addBatchNormalization()
 
+    def addSeveralDeconvLayersWithSkip(self, filter_shapes, input_channels, output_channels, strides, names, padding="SAME"):
+        assert (len(filter_shapes) == len(input_channels) == len(output_channels) == len(strides) == len(names)),  \
+            "filter_widths, input_channels, output_channels, strides, and names should all have the same length"
+        for filter_shape, input_channels, output_channels, stride, name in \
+                zip(filter_shapes, input_channels, output_channels, strides, names):
+            self.addDeconvLayerWithSkip(filter_shape, input_channels, output_channels, stride, name, padding)
+            self.addBatchNormalization()
+
     def addDeconvLayer(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,
                                              stride, name, padding))
         self.addRelu()
+
+    def addDeconvLayerWithSkip(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
+        temp1 = self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, input_channels,
+                                                          [1,1,1,1], name+'_1', "SAME")
+        self._outputSetter(tf.nn.relu(temp1) + self._output)
+        self.addDeconvLayer(filter_shape, input_channels, output_channels, stride, name+'_2', padding)
 
     def addDeconvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._deconvLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,

@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 import socket
 if 'omenx' in socket.gethostname():
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+    os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 from network.sequentialModel import SequentialModel
 from network.stftGapContextEncoder import StftGapContextEncoder
@@ -19,7 +19,6 @@ if 'omenx' in socket.gethostname():
 else:
     train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
     valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
-
 
 window_size = 5120
 gap_length = 1024
@@ -64,7 +63,7 @@ with tf.variable_scope("Encoder"):
     output_channels = [32, 64, 128, 128, 200]
     strides = [[1, 2, 2, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 1, 2, 1], [1, 1, 1, 1]]
     names = ['First_Conv', 'Second_Conv', 'Third_Conv', 'Fourth_Conv', 'Fifth_Conv']
-    aModel.addSeveralConvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
+    aModel.addSeveralConvLayersWithSkip(filter_shapes=filter_shapes, input_channels=input_channels,
                                 output_channels=output_channels, strides=strides, names=names)
 
 aModel.addReshape((batch_size, 3200))
@@ -79,11 +78,11 @@ with tf.variable_scope("Decoder"):
     output_channels = [64, 257]
     strides = [[1, 2, 2, 1]] * len(input_channels)
     names = ['First_Deconv', 'Second_Deconv']
-    aModel.addSeveralDeconvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
+    aModel.addSeveralDeconvLayersWithSkip(filter_shapes=filter_shapes, input_channels=input_channels,
                                   output_channels=output_channels, strides=strides, names=names)
 
     aModel.addReshape((batch_size, 8, 257, 128))
-    aModel.addDeconvLayer(filter_shape=(3, 33), input_channels=128, output_channels=11, stride=(1, 2, 2, 1),
+    aModel.addDeconvLayerWithSkip(filter_shape=(3, 33), input_channels=128, output_channels=11, stride=(1, 2, 2, 1),
                           name='Third_deconv')
     aModel.addBatchNormalization()
 
@@ -98,5 +97,5 @@ model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_baseline')
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_1_skip')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
