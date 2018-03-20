@@ -2,3 +2,4 @@ saved_models
 simulations/*.xlsx
 logdir_real_cae
 .DS_Store
+.ipynb_checkpoints

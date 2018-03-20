@@ -1,4 +1,5 @@
 import tensorflow as tf
+import re
 import numpy as np
 from network.contextEncoder import ContextEncoderNetwork
 from utils.evaluationWriter import EvaluationWriter
@@ -122,16 +123,17 @@ class StftGapContextEncoder(ContextEncoderNetwork):
                                        num_epochs=40000)
 
                 saver = tf.train.Saver(max_to_keep=1000)
-                if restore_num:
-                    path = self.modelsPath(restore_num)
-                    self._initial_model_num = restore_num
-                    saver.restore(sess, path)
-                    sess.run([tf.local_variables_initializer()])
-                    print("Model restored.")
-                else:
+                if restore_num == 0:
                     init = tf.global_variables_initializer()
                     sess.run([init, tf.local_variables_initializer()])
                     print("Initialized")
+                else:
+                    path = self.modelsPath(restore_num)
+                    self._initial_model_num = get_trailing_number(path[:-5])
+                    print(self._initial_model_num)
+                    saver.restore(sess, path)
+                    sess.run([tf.local_variables_initializer()])
+                    print("Model restored.")
 
                 logs_path = '../logdir_real_cae/' + self._name  # write each run to a diff folder.
                 print("logs path:", logs_path)
@@ -195,3 +197,8 @@ class StftGapContextEncoder(ContextEncoderNetwork):
             trainReader.finish()
             print("Finalizing at step:", self._initial_model_num)
             print("Last saved model:", self.modelsPath(self._initial_model_num))
+
+
+def get_trailing_number(s):
+    m = re.search(r'\d+$', s)
+    return int(m.group()) if m else None

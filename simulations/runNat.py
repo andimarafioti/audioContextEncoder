@@ -98,4 +98,4 @@ slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=window_size,
                                                gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_1_')
-aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
+aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6, restore_num=None)
