@@ -113,6 +113,13 @@ class StftGapContextEncoder(ContextEncoderNetwork):
 
         return reconstructed, out_gaps
 
+    def _evaluateValidSNR(self, summaries_dict, validReader, evalWriter, writer, sess, step):
+        reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=8)
+        step_valid_SNR = evalWriter.evaluateImages(reconstructed, out_gaps, self._initial_model_num + step)
+        validSNRSummaryToWrite = sess.run(summaries_dict['valid_SNR_summary'],
+                                          feed_dict={summaries_dict['valid_SNR']: step_valid_SNR})
+        writer.add_summary(validSNRSummaryToWrite, self._initial_model_num + step)
+
     def _evaluatePlotSummary(self, plot_summary, gaps, feed_dict, writer, sess, step):
         pass
 
