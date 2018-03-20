@@ -167,7 +167,7 @@ class ContextEncoderNetwork(object):
     def _trainingFeedDict(self, sides, gaps, sess):
         return {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): True}
 
-    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=1):
+    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=0.95):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
@@ -176,14 +176,14 @@ class ContextEncoderNetwork(object):
 
                 saver = tf.train.Saver(max_to_keep=1000)
                 print(restore_num)
-                if restore_num == 0:
+
+                path = self.modelsPath(restore_num)
+                self._initial_model_num = get_trailing_number(path[:-5])
+                if self._initial_model_num == 0:
                     init = tf.global_variables_initializer()
                     sess.run([init, tf.local_variables_initializer()])
                     print("Initialized")
                 else:
-                    path = self.modelsPath(restore_num)
-                    self._initial_model_num = get_trailing_number(path[:-5])
-                    print(self._initial_model_num)
                     saver.restore(sess, path)
                     sess.run([tf.local_variables_initializer()])
                     print("Model restored.")
