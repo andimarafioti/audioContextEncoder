@@ -37,12 +37,11 @@ anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal
                                                                     fft_window_length=fft_window_length,
                                                                     fft_hop_size=fft_hop_size)
 anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
-
 aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
 
 aModel = SequentialModel(shapeOfInput=(batch_size, signal_length), name="context encoder")
 anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
-aModel.divideComplexOutputIntoRealAndImaginaryParts()
+aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 32, 257, 2)
 aModel.addReshape((batch_size, 16, 257, 4))
 
 with tf.variable_scope("Encoder"):
