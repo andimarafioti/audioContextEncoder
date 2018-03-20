@@ -139,4 +139,15 @@ class TestStftForTheInpaintingSetting(TestCase):
 
         self.assertEquals(batchOfGaps.shape, (batch_size, self.gap_length))
 
+    def test09TheStftProducesTheCorrectShapeWhenDoingTheInverseStftOnTheFullSignal(self):
+        batch_size = 32
+        frameCount = ((self.signal_length-self.fft_window_length)/self.fft_hop_size)+1
+        binsPerFrame = self.fft_window_length//2+1
+        batchOfSignalStft = tf.zeros((batch_size, frameCount, binsPerFrame), dtype=tf.complex64)
 
+        batchOfSignals = self.anStftForTheInpaintingSetting.inverseStftOfSignal(batchOfSignalStft)
+
+        with tf.Session() as sess:
+            batchOfGaps = sess.run(batchOfSignals)
+
+        self.assertEquals(batchOfGaps.shape, (batch_size, self.signal_length))

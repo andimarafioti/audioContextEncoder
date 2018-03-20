@@ -51,6 +51,12 @@ class StftForTheInpaintingSetting(object):
                                               frame_step=self._fftHopSize, window_fn=inverse_window)
         return padded_gaps[:, self.padding():-self.padding()]
 
+    def inverseStftOfSignal(self, batchOfStftsOfSignal):
+        window_fn = functools.partial(window_ops.hann_window, periodic=True)
+        inverse_window = tf.contrib.signal.inverse_stft_window_fn(self._fftWindowLength, forward_window_fn=window_fn)
+        return tf.contrib.signal.inverse_stft(stfts=batchOfStftsOfSignal, frame_length=self._fftWindowLength,
+                                              frame_step=self._fftHopSize, window_fn=inverse_window)
+
     def _gapBeginning(self):
         return (self._signalLength - self._gapLength) // 2
 
