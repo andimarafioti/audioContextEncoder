@@ -130,7 +130,7 @@ class SequentialModel(object):
     def divideComplexOutputIntoMagAndPhase(self):
         mag = tf.abs(self._output)
         phase = tf.angle(self._output)
-        stacked = tf.stack([mag, phase], axis=-1, name='divideComplexOutputIntoRealAndImaginaryParts')
+        stacked = tf.stack([mag, phase], axis=-1, name='divideComplexOutputIntoMagAndPhaseParts')
         self._outputSetter(stacked)
 
     def _outputSetter(self, value):
