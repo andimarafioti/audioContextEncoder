@@ -73,14 +73,20 @@ class TestStftForTheInpaintingSetting(TestCase):
 
         self.anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 
-        self.assertEquals(aTargetModel.output().shape.as_list(), [32, 11, 257])
+        framesOnGap = (((self.gap_length + self.anStftForTheInpaintingSetting.padding()*2)-self.fft_window_length)/
+                       self.fft_hop_size)+1
+        binsPerFrame = self.fft_window_length//2+1
+        self.assertEquals(aTargetModel.output().shape.as_list(), [32, framesOnGap, binsPerFrame])
 
     def test05TheStftRemovesTheGapCorrectly(self):
         fake_batch_of_signal = np.array([np.arange(self.signal_length)])
         produced_signal = self.anStftForTheInpaintingSetting._removeGap(fake_batch_of_signal)
 
-        left_side = fake_batch_of_signal[:, :2048]
-        right_side = fake_batch_of_signal[:, 2048 + 1024:]
+        gap_begins = (self.signal_length-self.gap_length)//2
+        gap_ends = gap_begins + self.gap_length
+
+        left_side = fake_batch_of_signal[:, :gap_begins]
+        right_side = fake_batch_of_signal[:, gap_ends:]
         signal_without_gap = tf.stack((left_side, right_side), axis=1)
 
         with tf.Session() as sess:
@@ -89,8 +95,10 @@ class TestStftForTheInpaintingSetting(TestCase):
         np.testing.assert_almost_equal(signal_without_gap, produced_signal)
 
     def test06TheStftAddsTheCorrectPaddingToTheSides(self):
-        left_side = np.array([np.arange(2048, dtype=np.float32)])
-        right_side = np.array([np.arange(2048, dtype=np.float32)])
+        side_length = (self.signal_length-self.gap_length)//2
+
+        left_side = np.array([np.arange(side_length, dtype=np.float32)])
+        right_side = np.array([np.arange(side_length, dtype=np.float32)])
         fake_batch_of_sides = tf.stack((left_side, right_side), axis=1)
 
         produced_signal = self.anStftForTheInpaintingSetting._addPaddingForStftOfContext(fake_batch_of_sides)
@@ -98,8 +106,8 @@ class TestStftForTheInpaintingSetting(TestCase):
         with tf.Session() as sess:
             produced_signal = sess.run(produced_signal)
 
-        left_side_padded = np.concatenate((left_side, np.zeros((1, 384))), axis=1)
-        right_side_padded = np.concatenate((right_side, np.zeros((1, 384))), axis=1)
+        left_side_padded = np.concatenate((left_side, np.zeros((1, self.fft_window_length-self.fft_hop_size))), axis=1)
+        right_side_padded = np.concatenate((right_side, np.zeros((1, self.fft_window_length-self.fft_hop_size))), axis=1)
         new_signal = np.stack([left_side_padded, right_side_padded], axis=1)
 
         np.testing.assert_almost_equal(new_signal, produced_signal)
@@ -110,6 +118,25 @@ class TestStftForTheInpaintingSetting(TestCase):
 
         self.anStftForTheInpaintingSetting.addStftForTheContextTo(aTargetModel)
 
-        self.assertEquals(aTargetModel.output().shape.as_list(), [32, 2, 16, 257])
+        side_length = (self.signal_length-self.gap_length)//2
+        framesOnSides = ((side_length + self.anStftForTheInpaintingSetting.padding() - self.fft_window_length)
+                         / self.fft_hop_size)+1
+        binsPerFrame = self.fft_window_length//2+1
+
+        self.assertEquals(aTargetModel.output().shape.as_list(), [32, 2, framesOnSides, binsPerFrame])
+
+    def test08TheStftProducesTheCorrectShapeWhenDoingTheInverseStftOnTheGap(self):
+        batch_size = 32
+        framesOnGap = (((self.gap_length + self.anStftForTheInpaintingSetting.padding()*2)-self.fft_window_length)/
+                       self.fft_hop_size)+1
+        binsPerFrame = self.fft_window_length//2+1
+        batchOfGapStft = tf.zeros((batch_size, framesOnGap, binsPerFrame), dtype=tf.complex64)
+
+        batchOfGaps = self.anStftForTheInpaintingSetting.inverseStftOfGap(batchOfGapStft)
+
+        with tf.Session() as sess:
+            batchOfGaps = sess.run(batchOfGaps)
+
+        self.assertEquals(batchOfGaps.shape, (batch_size, self.gap_length))
 
 

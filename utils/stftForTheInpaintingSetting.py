@@ -1,4 +1,7 @@
+import functools
+
 import tensorflow as tf
+from tensorflow.contrib.signal.python.ops import window_ops
 
 __author__ = 'Andres'
 
@@ -41,11 +44,18 @@ class StftForTheInpaintingSetting(object):
         aModel.setOutputTo(contextOfTheSignalPadded)
         aModel.addSTFT(frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
 
+    def inverseStftOfGap(self, batchOfStftOfGap):
+        window_fn = functools.partial(window_ops.hann_window, periodic=True)
+        inverse_window = tf.contrib.signal.inverse_stft_window_fn(self._fftWindowLength, forward_window_fn=window_fn)
+        padded_gaps = tf.contrib.signal.inverse_stft(stfts=batchOfStftOfGap, frame_length=self._fftWindowLength,
+                                              frame_step=self._fftHopSize, window_fn=inverse_window)
+        return padded_gaps[:, self.padding():-self.padding()]
+
     def _gapBeginning(self):
-        return (self._signalLength-self._gapLength)//2
+        return (self._signalLength - self._gapLength) // 2
 
     def _gapEnding(self):
-        return self._gapBeginning()+self._gapLength
+        return self._gapBeginning() + self._gapLength
 
     def _removeExtraSidesForSTFTOfGap(self, batchOfSignals):
         return batchOfSignals[:, self._gapBeginning() - self.padding(): self._gapEnding() + self.padding()]
