@@ -18,7 +18,8 @@ class StftGapContextEncoder(ContextEncoderNetwork):
         self._sides = tf.placeholder(tf.float32, shape=(batch_size, self._window_size - self._gap_length), name='sides')
         self._reconstructedSignal = self._reconstructSignal(self._sides, self.gap_data)
 
-        self._SNR = tf.reduce_mean(self._pavlovs_SNR(self._target_model.output(), self._reconstructed_input_data,
+    def trainSNR(self):
+        return tf.reduce_mean(self._pavlovs_SNR(self._target_model.output(), self._reconstructed_input_data,
                                                      onAxis=[1, 2, 3]))
 
     def _reconstructSignal(self, sides, gaps):
@@ -112,91 +113,12 @@ class StftGapContextEncoder(ContextEncoderNetwork):
 
         return reconstructed, out_gaps
 
-    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None,
-              per_process_gpu_memory_fraction=1):
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-            try:
-                trainReader = TFReader(train_data_path, self._window_size, self._gap_length, capacity=int(2e5),
-                                       num_epochs=400)
-                validReader = TFReader(valid_data_path, self._window_size, self._gap_length, capacity=int(2e5),
-                                       num_epochs=40000)
+    def _evaluatePlotSummary(self, plot_summary, gaps, feed_dict, writer, sess, step):
+        pass
 
-                saver = tf.train.Saver(max_to_keep=1000)
-                if restore_num == 0:
-                    init = tf.global_variables_initializer()
-                    sess.run([init, tf.local_variables_initializer()])
-                    print("Initialized")
-                else:
-                    path = self.modelsPath(restore_num)
-                    self._initial_model_num = get_trailing_number(path[:-5])
-                    print(self._initial_model_num)
-                    saver.restore(sess, path)
-                    sess.run([tf.local_variables_initializer()])
-                    print("Model restored.")
-
-                logs_path = '../logdir_real_cae/' + self._name  # write each run to a diff folder.
-                print("logs path:", logs_path)
-                writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
-
-                train_SNR_summary = tf.summary.scalar("training_SNR", self._SNR)
-                valid_SNR = tf.placeholder(tf.float32, name="valid_SNR")
-                valid_SNR_summary = tf.summary.scalar("validation_SNR", valid_SNR)
-                # plot_summary = PlotSummary('reconstruction')
-
-                trainReader.start()
-                evalWriter = EvaluationWriter(self._name + '.xlsx')
-
-                # options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-                # run_metadata = tf.RunMetadata()
-                # many_runs_timeline = TimeLiner()
-
-                for step in range(1, int(num_steps)):
-                    try:
-                        sides, gaps = trainReader.dataOperation(session=sess)
-                    except StopIteration:
-                        print(step)
-                        print("End of queue!")
-                        break
-
-                    rec = sess.run(self._reconstructedSignal, feed_dict={self._sides: sides, self.gap_data: gaps})
-
-                    feed_dict = {self._model.input(): rec, self._target_model.input(): rec, self._model.isTraining(): True}
-                    sess.run(self._optimizer, feed_dict=feed_dict)  # , options=options, run_metadata=run_metadata)
-
-                    # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-                    # chrome_trace = fetched_timeline.generate_chrome_trace_format()
-                    # many_runs_timeline.update_timeline(chrome_trace)
-
-                    if step % 40 == 0:
-                        train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
-                        writer.add_summary(train_summ, self._initial_model_num + step)
-                    if step % 2000 == 0:
-                        print(step)
-                        #reconstructed, out_gaps = self._reconstruct(sess, trainReader, max_steps=8)  # WRONG
-                        # plot_summary.plotSideBySide(out_gaps, reconstructed)
-                        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict=feed_dict)
-                        writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
-                        #summaryToWrite = plot_summary.produceSummaryToWrite(sess)
-                        #writer.add_summary(summaryToWrite, self._initial_model_num + step)
-                        saver.save(sess, self.modelsPath(self._initial_model_num + step))
-                        reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=8)
-                        step_valid_SNR = evalWriter.evaluateImages(reconstructed, out_gaps, self._initial_model_num + step)
-                        validSNRSummaryToWrite = sess.run(valid_SNR_summary, feed_dict={valid_SNR: step_valid_SNR})
-                        writer.add_summary(validSNRSummaryToWrite, self._initial_model_num + step)
-
-            except KeyboardInterrupt:
-                pass
-            # many_runs_timeline.save('timeline_03_merged_%d_runs.json' % step)
-            evalWriter.save()
-            train_summ = sess.run(self._lossSummaries, feed_dict=feed_dict)
-            writer.add_summary(train_summ, self._initial_model_num + step)
-            saver.save(sess, self.modelsPath(self._initial_model_num + step))
-            self._initial_model_num += step
-
-            trainReader.finish()
-            print("Finalizing at step:", self._initial_model_num)
-            print("Last saved model:", self.modelsPath(self._initial_model_num))
+    def _trainingFeedDict(self, sides, gaps, sess):
+        rec = sess.run(self._reconstructedSignal, feed_dict={self._sides: sides, self.gap_data: gaps})
+        return {self._model.input(): rec, self._target_model.input(): rec, self._model.isTraining(): True}
 
 
 def get_trailing_number(s):

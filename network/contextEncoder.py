@@ -30,6 +30,10 @@ class ContextEncoderNetwork(object):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self._loss)
+        self._SNR = self.trainSNR()
+
+    def trainSNR(self):
+        return tf.reduce_mean(self._pavlovs_SNR(self.gap_data, self._reconstructed_input_data))
 
     def _squaredEuclideanNorm(self, tensor, onAxis=[1]):
         squared = tf.square(tensor)
@@ -136,7 +140,34 @@ class ContextEncoderNetwork(object):
 
         return reconstructed, out_gaps
 
-    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=0, per_process_gpu_memory_fraction=1):
+    def _initEvaluationSummaries(self):
+        summaries_dict = {'train_SNR_summary': tf.summary.scalar("training_SNR", self._SNR),
+                          'valid_SNR': tf.placeholder(tf.float32, name="valid_SNR"),
+                          'plot_summary': PlotSummary('reconstruction')}
+        summaries_dict['valid_SNR_summary'] = tf.summary.scalar("validation_SNR", summaries_dict['valid_SNR'])
+        return summaries_dict
+
+    def _evaluateTrainingSNR(self, train_SNR_summary, feed_dict, writer, sess, step):
+        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict=feed_dict)
+        writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
+
+    def _evaluateValidSNR(self, summaries_dict, validReader, evalWriter, writer, sess, step):
+        reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=256)
+        step_valid_SNR = evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
+        validSNRSummaryToWrite = sess.run(summaries_dict['valid_SNR_summary'],
+                                          feed_dict={summaries_dict['valid_SNR']: step_valid_SNR})
+        writer.add_summary(validSNRSummaryToWrite, self._initial_model_num + step)
+
+    def _evaluatePlotSummary(self, plot_summary, gaps, feed_dict, writer, sess, step):
+        reconstructed = sess.run(self._reconstructed_input_data, feed_dict=feed_dict)
+        plot_summary.plotSideBySide(gaps, reconstructed)
+        summaryToWrite = plot_summary.produceSummaryToWrite(sess)
+        writer.add_summary(summaryToWrite, self._initial_model_num + step)
+
+    def _trainingFeedDict(self, sides, gaps, sess):
+        return {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): True}
+
+    def train(self, train_data_path, valid_data_path, num_steps=2e2, restore_num=None, per_process_gpu_memory_fraction=1):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=per_process_gpu_memory_fraction)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             try:
@@ -162,11 +193,7 @@ class ContextEncoderNetwork(object):
                 print("logs path:", logs_path)
                 writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
-                train_SNR = tf.placeholder(tf.float32, name="train_SNR")
-                train_SNR_summary = tf.summary.scalar("training_SNR", train_SNR)
-                valid_SNR = tf.placeholder(tf.float32, name="valid_SNR")
-                valid_SNR_summary = tf.summary.scalar("validation_SNR", valid_SNR)
-                plot_summary = PlotSummary('reconstruction')
+                summaries_dict = self._initEvaluationSummaries()
 
                 trainReader.start()
                 evalWriter = EvaluationWriter(self._name + '.xlsx')
@@ -183,7 +210,7 @@ class ContextEncoderNetwork(object):
                         print("End of queue!")
                         break
 
-                    feed_dict = {self._model.input(): sides, self.gap_data: gaps, self._model.isTraining(): True}
+                    feed_dict = self._trainingFeedDict(sides, gaps, sess)
                     sess.run(self._optimizer, feed_dict=feed_dict)  # , options=options, run_metadata=run_metadata)
 
                     # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
@@ -195,19 +222,11 @@ class ContextEncoderNetwork(object):
                         print("Training summaries: {}".format(train_summ))
                         writer.add_summary(train_summ, self._initial_model_num + step)
                     if step % 2000 == 0:
-                        reconstructed = sess.run(self._reconstructed_input_data, feed_dict=feed_dict)
-                        plot_summary.plotSideBySide(gaps, reconstructed)
-                        train_SNRs = tf.reduce_mean(self._pavlovs_SNR(gaps, reconstructed))
-                        step_train_SNR = sess.run(train_SNRs)
-                        trainSNRSummaryToWrite = sess.run(train_SNR_summary, feed_dict={train_SNR: step_train_SNR})
-                        writer.add_summary(trainSNRSummaryToWrite, self._initial_model_num + step)
-                        summaryToWrite = plot_summary.produceSummaryToWrite(sess)
-                        writer.add_summary(summaryToWrite, self._initial_model_num + step)
+                        print(step)
+                        self._evaluateTrainingSNR(summaries_dict['train_SNR_summary'], feed_dict, writer, sess, step)
+                        self._evaluatePlotSummary(summaries_dict['plot_summary'], gaps, feed_dict, writer, sess, step)
+                        self._evaluateValidSNR(summaries_dict, validReader, evalWriter, writer, sess, step)
                         saver.save(sess, self.modelsPath(self._initial_model_num + step))
-                        reconstructed, out_gaps = self._reconstruct(sess, validReader, max_steps=256)
-                        step_valid_SNR = evalWriter.evaluate(reconstructed, out_gaps, self._initial_model_num + step)
-                        validSNRSummaryToWrite = sess.run(valid_SNR_summary, feed_dict={valid_SNR: step_valid_SNR})
-                        writer.add_summary(validSNRSummaryToWrite, self._initial_model_num + step)
 
             except KeyboardInterrupt:
                 pass
