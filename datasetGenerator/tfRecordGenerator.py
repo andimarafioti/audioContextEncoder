@@ -5,6 +5,7 @@ import time
 import os
 import sys
 from random import shuffle
+
 __author__ = 'Andres'
 
 
@@ -27,7 +28,7 @@ class TFRecordGenerator(object):
 
         train_filename = self.name() + '.tfrecords'  # address to save the TFRecords file
         # open the TFRecords file
-        writer = tf.python_io.TFRecordWriter(
+        writer = tf.python_io.TFRecordWriter(train_filename)
 
         time_per_loaded = []
         time_to_HD = []
