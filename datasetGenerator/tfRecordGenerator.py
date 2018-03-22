@@ -4,7 +4,7 @@ import tensorflow as tf
 import time
 import os
 import sys
-
+from random import shuffle
 __author__ = 'Andres'
 
 
@@ -27,7 +27,7 @@ class TFRecordGenerator(object):
 
         train_filename = self.name() + '.tfrecords'  # address to save the TFRecords file
         # open the TFRecords file
-        writer = tf.python_io.TFRecordWriter(train_filename)
+        writer = tf.python_io.TFRecordWriter(
 
         time_per_loaded = []
         time_to_HD = []
@@ -35,9 +35,8 @@ class TFRecordGenerator(object):
         i = 0
         total = 0
         file_names = list(os.listdir(self._pathToDataFolder))
-        file_names = file_names[np.random.permutation(len(file_names))]
 
-        for file_name in file_names:
+        for file_name in shuffle(file_names):
             if file_name.endswith('.wav'):
                 now = time.time()
                 audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=None)
