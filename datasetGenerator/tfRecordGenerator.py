@@ -34,7 +34,10 @@ class TFRecordGenerator(object):
         print("start:", start)
         i = 0
         total = 0
-        for file_name in os.listdir(self._pathToDataFolder):
+        file_names = list(os.listdir(self._pathToDataFolder))
+        file_names = file_names[np.random.permutation(len(file_names))]
+
+        for file_name in file_names:
             if file_name.endswith('.wav'):
                 now = time.time()
                 audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=None)
