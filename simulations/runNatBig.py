@@ -17,7 +17,7 @@ if 'omenx' in socket.gethostname():
     train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
     valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
 else:
-    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
+    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_suffle_w5120_g1024_h512.tfrecords'
     valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
 
 window_size = 5120
