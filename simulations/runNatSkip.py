@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 import socket
 if 'omenx' in socket.gethostname():
-    os.environ["CUDA_VISIBLE_DEVICES"]=""
+    os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 from network.sequentialModel import SequentialModel
 from network.stftGapContextEncoder import StftGapContextEncoder
