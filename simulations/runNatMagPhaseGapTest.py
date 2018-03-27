@@ -16,13 +16,8 @@ from network.stftGapContextEncoder import StftGapContextEncoder
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-if 'omenx' in socket.gethostname():
-    train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
-    valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
-else:
-    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
-    valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
-
+train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
+valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 
 signal_length = 5120
 gap_length = 1024
@@ -37,11 +32,12 @@ anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal
                                                                     fft_window_length=fft_window_length,
                                                                     fft_hop_size=fft_hop_size)
 anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
-aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
+aTargetModel.divideComplexOutputIntoMagAndPhase()  # (256, 11, 257, 2)
 
 aModel = SequentialModel(shapeOfInput=(batch_size, signal_length), name="context encoder")
+
 anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
-aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 32, 257, 2)
+aModel.divideComplexOutputIntoRealAndImaginaryParts()
 aModel.addReshape((batch_size, 16, 257, 4))
 
 with tf.variable_scope("Encoder"):
@@ -84,5 +80,5 @@ model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=signal_length,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_baseline')
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_mag_phase_gap_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
