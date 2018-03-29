@@ -176,18 +176,16 @@ class ContextEncoderNetwork(object):
 
                 saver = tf.train.Saver(max_to_keep=1000)
                 print(restore_num)
-                if restore_num == 0:
+                path = self.modelsPath(restore_num)
+                self._initial_model_num = get_trailing_number(path[:-5])
+                if self._initial_model_num == 0:
                     init = tf.global_variables_initializer()
                     sess.run([init, tf.local_variables_initializer()])
                     print("Initialized")
                 else:
-                    path = self.modelsPath(restore_num)
-                    self._initial_model_num = get_trailing_number(path[:-5])
-                    print(self._initial_model_num)
                     saver.restore(sess, path)
                     sess.run([tf.local_variables_initializer()])
                     print("Model restored.")
-
 
                 logs_path = '../logdir_real_cae/' + self._name  # write each run to a diff folder.
                 print("logs path:", logs_path)
