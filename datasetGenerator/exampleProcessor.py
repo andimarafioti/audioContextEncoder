@@ -5,7 +5,7 @@ __author__ = 'Andres'
 
 
 class ExampleProcessor(object):
-    def __init__(self, gapLength, sideLength, hopSize, gapMinRMS=1e-3):
+    def __init__(self, gapLength=1024, sideLength=2048, hopSize=512, gapMinRMS=1e-3):
         self._sideLength = sideLength
         self._gapLength = gapLength
         self._totalLength = gapLength + 2*sideLength
@@ -19,8 +19,7 @@ class ExampleProcessor(object):
         return self._sideLength
 
     def describe(self):
-        return "_w" + str(self._totalLength) + '_g' + str(self._gapLength) \
-               + '_h' + str(self._hopSize) + '_t' + str(self._gapMinRMS)
+        return "_w" + str(self._totalLength) + '_g' + str(self._gapLength) + '_h' + str(self._hopSize)
 
     def process(self, audio_signal):
         audio_without_silence_at_beginning_and_end = self._trim_silence(audio_signal, frame_length=self._gapLength)
@@ -32,7 +31,7 @@ class ExampleProcessor(object):
         if audio.size < frame_length:
             frame_length = audio.size
         energy = librosa.feature.rmse(audio, frame_length=frame_length)
-        frames = np.nonzero(energy > self._gapMinRMS*frame_length)
+        frames = np.nonzero(energy > self._gapMinRMS * 10)
         indices = librosa.core.frames_to_samples(frames)[1]
 
         # Note: indices can be an empty array, if the whole audio was silence.
@@ -52,7 +51,7 @@ class ExampleProcessor(object):
         begin = int(np.floor((self._totalLength - self._gapLength) / 2))
         end = int(np.floor((self._totalLength + self._gapLength) / 2))
         sides = np.concatenate((audio[:, :begin], audio[:, end:]), axis=1)
-        sides = np.reshape(sides, [-1, self._totalLength - self._gapLength, 1])
+        sides = np.reshape(sides, [-1, self._totalLength - self._gapLength])
         gaps = audio[:, begin:end]
         gaps = np.reshape(gaps, [-1, self._gapLength])
 
