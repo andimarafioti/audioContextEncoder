@@ -11,10 +11,11 @@ __author__ = 'Andres'
 class TFRecordGenerator(object):
     """To generate a Dataset, instantiate this class with its arguments and call generateDataset()"""
 
-    def __init__(self, baseName, pathToDataFolder, exampleProcessor, notifyEvery=10000):
+    def __init__(self, baseName, pathToDataFolder, exampleProcessor, targetSamplingRate=16000, notifyEvery=10000):
         self._pathToDataFolder = pathToDataFolder
         self._exampleProcessor = exampleProcessor
         self._notifyEvery = notifyEvery
+        self._targetSamplingRate = targetSamplingRate
         self._baseName = baseName
 
     def name(self):
@@ -32,7 +33,7 @@ class TFRecordGenerator(object):
 
         for file_name in os.listdir(self._pathToDataFolder):
             if self._filenameShouldBeLoaded(file_name):
-                audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=None)
+                audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=self._targetSamplingRate)
                 sides, gaps = self._exampleProcessor.process(audio)
                 if sides.shape[0] is 0:
                     print("Got a completely silenced signal! with path:", file_name)
