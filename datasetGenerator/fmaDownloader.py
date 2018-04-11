@@ -10,4 +10,4 @@ class FMADownloader(Downloader):
     def downloadAndExtract(self):
         self._download(self.SMALL_LINK, self.SMALL_FILENAME)
         self._extractZip(self.SMALL_FILENAME)
-
+        self._deleteCompressedFile(self.SMALL_FILENAME)

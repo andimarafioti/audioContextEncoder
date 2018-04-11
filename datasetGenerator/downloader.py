@@ -2,6 +2,7 @@ import ssl
 import urllib.request
 import tarfile
 import zipfile
+import os
 
 __author__ = 'Andres'
 
@@ -22,15 +23,20 @@ class Downloader(object):
                 print('\r Downloaded {:.2f} % '.format(100 * size / length), end='')
                 data = response.read(blocksize)
                 out_file.write(data)
+            print('')
+
+    def _deleteCompressedFile(self, filename):
+        print('Deleting', filename)
+        os.remove(filename)
 
     def _extractTar(self, aFile):
-        print('\n extracting ', aFile)
+        print('Extracting', aFile)
         tar = tarfile.open(aFile)
         tar.extractall()
         tar.close()
 
     def _extractZip(self, aFile):
-        print('\n extracting ', aFile)
+        print('Extracting', aFile)
         zip_ref = zipfile.ZipFile(aFile, 'r')
         zip_ref.extractall()
         zip_ref.close()
