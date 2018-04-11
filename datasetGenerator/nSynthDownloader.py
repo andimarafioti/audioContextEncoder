@@ -12,13 +12,17 @@ class NSynthDownloader(Downloader):
     VALID_FILENAME = "nsynth_valid.tar.gz"
     TEST_FILENAME = "nsynth_test.tar.gz"
 
-    def downloadAndExtract(self):
-        self._download(self.TEST_LINK, self.TEST_FILENAME)
-        self._extractTar(self.TEST_FILENAME)
-        self._deleteCompressedFile(self.TEST_FILENAME)
-        self._download(self.TRAIN_LINK, self.TRAIN_FILENAME)
-        self._extractTar(self.TRAIN_FILENAME)
-        self._deleteCompressedFile(self.TRAIN_FILENAME)
-        self._download(self.VALID_LINK, self.VALID_FILENAME)
-        self._extractTar(self.VALID_FILENAME)
-        self._deleteCompressedFile(self.VALID_FILENAME)
+    def _downloadLinksAndFilenames(self):
+        return [(self.TEST_LINK, self.TEST_FILENAME),
+                (self.TRAIN_LINK, self.TRAIN_FILENAME),
+                (self.VALID_LINK, self.VALID_FILENAME)]
+
+    def _extractCompressedFile(self, filename):
+        self._extractTar(filename)
+
+    def _divideDataIntoTrainValidAndTestSubsets(self):
+        print('NSynth dataset comes divided into training, validation and testing subsets.')
+
+if __name__ == "__main__":
+    down = NSynthDownloader()
+    down.downloadAndExtract()

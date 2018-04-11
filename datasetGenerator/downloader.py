@@ -8,6 +8,13 @@ __author__ = 'Andres'
 
 
 class Downloader(object):
+    def downloadAndExtract(self):
+        for link, filename in self._downloadLinksAndFilenames():
+            self._download(link, filename)
+            self._extractCompressedFile(filename)
+            self._deleteCompressedFile(filename)
+        self._divideDataIntoTrainValidAndTestSubsets()
+
     def _download(self, aLink, toAFilename):
         print("Downloading to ", toAFilename)
         size = 0
@@ -40,3 +47,12 @@ class Downloader(object):
         zip_ref = zipfile.ZipFile(aFile, 'r')
         zip_ref.extractall()
         zip_ref.close()
+
+    def _extractCompressedFile(self, filename):
+        raise NotImplementedError("Subclass Responsibility")
+
+    def _downloadLinksAndFilenames(self):
+        raise NotImplementedError("Subclass Responsibility")
+
+    def _divideDataIntoTrainValidAndTestSubsets(self):
+        raise NotImplementedError("Subclass Responsibility")
