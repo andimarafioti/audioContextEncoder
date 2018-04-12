@@ -10,11 +10,11 @@ downloader.downloadAndExtract()
 
 exampleProcessor = ExampleProcessor(gapLength=1024, sideLength=2048, hopSize=512, gapMinRMS=1e-3)
 
-tfRecordGenerator = NSynthTFRecordGenerator(baseName='test', pathToDataFolder='nsynth-test/audio', exampleProcessor=exampleProcessor)
+tfRecordGenerator = NSynthTFRecordGenerator(baseName='nsynth_test', pathToDataFolder=downloader.TEST_DIR, exampleProcessor=exampleProcessor)
 tfRecordGenerator.generateDataset()
 
-tfRecordGenerator = NSynthTFRecordGenerator(baseName='valid', pathToDataFolder='nsynth-valid/audio', exampleProcessor=exampleProcessor)
+tfRecordGenerator = NSynthTFRecordGenerator(baseName='nsynth_valid', pathToDataFolder=downloader.VALID_DIR, exampleProcessor=exampleProcessor)
 tfRecordGenerator.generateDataset()
 
-tfRecordGenerator = NSynthTFRecordGenerator(baseName='train', pathToDataFolder='nsynth-train/audio', exampleProcessor=exampleProcessor)
+tfRecordGenerator = NSynthTFRecordGenerator(baseName='nsynth_train', pathToDataFolder=downloader.TRAIN_DIR, exampleProcessor=exampleProcessor)
 tfRecordGenerator.generateDataset()
