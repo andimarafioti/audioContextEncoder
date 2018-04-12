@@ -12,9 +12,9 @@ class NSynthDownloader(Downloader):
     VALID_FILENAME = "nsynth_valid.tar.gz"
     TEST_FILENAME = "nsynth_test.tar.gz"
 
-    TRAIN_DIR = TRAIN_FILENAME[:-7] + '/audio'
-    VALID_DIR = VALID_FILENAME[:-7] + '/audio'
-    TEST_DIR = TEST_FILENAME[:-7] + '/audio'
+    TRAIN_DIR = "nsynth-train/audio"
+    VALID_DIR = "nsynth-valid/audio"
+    TEST_DIR = "nsynth-test/audio"
 
     def _downloadLinksAndFilenames(self):
         return [(self.TEST_LINK, self.TEST_FILENAME),
