@@ -5,6 +5,8 @@ import time
 import os
 import sys
 
+from audioread import NoBackendError
+
 __author__ = 'Andres'
 
 
@@ -33,7 +35,11 @@ class TFRecordGenerator(object):
 
         for file_name in os.listdir(self._pathToDataFolder):
             if self._filenameShouldBeLoaded(file_name):
-                audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=self._targetSamplingRate)
+                try:
+                    audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=self._targetSamplingRate)
+                except NoBackendError():
+                    print("No backend for file:", file_name)
+                    continue
                 sides, gaps = self._exampleProcessor.process(audio)
                 if sides.shape[0] is 0:
                     print("Got a completely silenced signal! with path:", file_name)
