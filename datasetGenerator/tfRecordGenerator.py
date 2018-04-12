@@ -37,7 +37,7 @@ class TFRecordGenerator(object):
             if self._filenameShouldBeLoaded(file_name):
                 try:
                     audio, sr = librosa.load(self._pathToDataFolder + '/' + file_name, sr=self._targetSamplingRate)
-                except NoBackendError():
+                except NoBackendError:
                     print("No backend for file:", file_name)
                     continue
                 sides, gaps = self._exampleProcessor.process(audio)
