@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 import tensorflow as tf
 
-from network.tfGraph import TFGraph
+from network.emptyTFGraph import EmptyTfGraph
 from utils.stftForTheInpaintingSetting import StftForTheInpaintingSetting
 
 __author__ = 'Andres'
@@ -69,7 +69,7 @@ class TestStftForTheInpaintingSetting(TestCase):
 
     def test04TheStftProducesAnSTFTOfTheExpectedShapeForTheGap(self):
         batch_size = 32
-        aTargetModel = TFGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
+        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
 
         self.anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 
@@ -114,7 +114,7 @@ class TestStftForTheInpaintingSetting(TestCase):
 
     def test07TheStftOfTheContextHasTheExpectedShape(self):
         batch_size = 32
-        aTargetModel = TFGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
+        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
 
         self.anStftForTheInpaintingSetting.addStftForTheContextTo(aTargetModel)
 

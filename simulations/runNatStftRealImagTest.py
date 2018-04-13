@@ -1,7 +1,7 @@
 import tensorflow as tf
 # from tensorflow.contrib import slim
+from network.emptyTFGraph import EmptyTfGraph
 
-from network.tfGraph import TFGraph
 from network.stftRealImagContextEncoder import StftRealImagContextEncoder
 
 __author__ = 'Andres'
@@ -17,7 +17,7 @@ batch_size = 256
 fft_frame_length = 512
 fft_frame_step = 128
 
-aModel = TFGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 aModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
 aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 37, 257, 2)

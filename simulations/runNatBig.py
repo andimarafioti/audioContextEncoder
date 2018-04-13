@@ -1,5 +1,8 @@
 import sys
 import os
+
+from network.emptyTFGraph import EmptyTfGraph
+
 sys.path.insert(0, '../')
 import tensorflow as tf
 from tensorflow.contrib import slim
@@ -7,7 +10,6 @@ import socket
 if 'omenx' in socket.gethostname():
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-from network.tfGraph import TFGraph
 from network.stftGapContextEncoder import StftGapContextEncoder
 
 __author__ = 'Andres'
@@ -27,7 +29,7 @@ batch_size = 256
 fft_frame_length = 512
 fft_frame_step = 128
 
-aTargetModel = TFGraph(shapeOfInput=(batch_size, window_size), name="Target Model")
+aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="Target Model")
 
 with tf.name_scope('Remove_unnecesary_sides_before_stft'):
     signal = aTargetModel.output()
@@ -36,7 +38,7 @@ with tf.name_scope('Remove_unnecesary_sides_before_stft'):
 aTargetModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
 aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
 
-aModel = TFGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 with tf.name_scope('Remove_gap_before_stft'):
     signal = aModel.output()

@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 
-from network.tfGraph import TFGraph
+from network.emptyTFGraph import EmptyTfGraph
 from network.stftMagContextEncoder import StftTestContextEncoder
 
 __author__ = 'Andres'
@@ -14,7 +14,7 @@ window_size = 5120
 gap_length = 1024
 batch_size = 256
 
-aModel = TFGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 signal = aModel.output()
 

@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.contrib.signal.python.ops import window_ops
 
 from network.contextEncoder import ContextEncoderNetwork
-from network.tfGraph import TFGraph
+from network.emptyTFGraph import EmptyTfGraph
 
 __author__ = 'Andres'
 
@@ -16,7 +16,7 @@ window_size = 5120
 gap_length = 1024
 batch_size = 256
 
-aModel = TFGraph(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
 
 dataset = aModel.output()
 signal_length = window_size - gap_length

@@ -1,6 +1,7 @@
 import sys
 import os
 
+from network.emptyTFGraph import EmptyTfGraph
 from network.stftPhaseContextEncoder import StftPhaseContextEncoder
 from utils.stftForTheInpaintingSetting import StftForTheInpaintingSetting
 
@@ -11,7 +12,6 @@ import socket
 if 'omenx' in socket.gethostname():
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-from network.tfGraph import TFGraph
 
 __author__ = 'Andres'
 
@@ -26,7 +26,7 @@ batch_size = 256
 fft_window_length = 512
 fft_hop_size = 128
 
-aTargetModel = TFGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
+aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
 anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal_length,
                                                                     gap_length=gap_length,
                                                                     fft_window_length=fft_window_length,
@@ -34,7 +34,7 @@ anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal
 anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 aTargetModel.divideComplexOutputIntoMagAndPhase()  # (256, 11, 257, 2)
 
-aModel = TFGraph(shapeOfInput=(batch_size, signal_length), name="context encoder")
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="context encoder")
 
 anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
 aModel.divideComplexOutputIntoMagAndPhase()
