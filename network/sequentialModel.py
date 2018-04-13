@@ -133,6 +133,22 @@ class SequentialModel(object):
         stacked = tf.stack([mag, phase], axis=-1, name='divideComplexOutputIntoMagAndPhaseParts')
         self._outputSetter(stacked)
 
+    def divideComplexOutputIntoMagAndMaskedPhase(self, threshold=1e-3):
+        mag = tf.abs(self._output)
+        phase = tf.angle(self._output)
+
+        shape = mag.shape.as_list()
+        shape[0] = 1
+        axis_to_reduce = [x for x in range(1, len(shape))]
+        maximum_per_example = tf.reduce_max(mag, axis=axis_to_reduce, keep_dims=True)  # Denkers run on tf 1.4
+        maximum_extruded = tf.tile(maximum_per_example, shape)
+
+        mask = maximum_extruded * threshold
+        masked_phase = tf.where(mag < mask, phase, phase * 0)
+
+        stacked = tf.stack([mag, masked_phase], axis=-1, name='divideComplexOutputIntoMagAndMaskedPhaseParts')
+        self._outputSetter(stacked)
+
     def _outputSetter(self, value):
         self._output = value
         self._description += "\n" + str(value)
