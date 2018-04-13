@@ -9,7 +9,7 @@ if 'omenx' in socket.gethostname():
     os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 
-from network.sequentialModel import SequentialModel
+from network.tfGraph import TFGraph
 from network.stftGapContextEncoder import StftGapContextEncoder
 
 __author__ = 'Andres'
@@ -25,7 +25,7 @@ batch_size = 256
 fft_frame_length = 512
 fft_frame_step = 128
 
-aTargetModel = SequentialModel(shapeOfInput=(batch_size, window_size), name="Target Model")
+aTargetModel = TFGraph(shapeOfInput=(batch_size, window_size), name="Target Model")
 
 with tf.name_scope('Remove_unnecesary_sides_before_stft'):
     signal = aTargetModel.output()
@@ -34,7 +34,7 @@ with tf.name_scope('Remove_unnecesary_sides_before_stft'):
 aTargetModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
 aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
 
-aModel = SequentialModel(shapeOfInput=(batch_size, window_size), name="context encoder")
+aModel = TFGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 with tf.name_scope('Remove_gap_before_stft'):
     signal = aModel.output()

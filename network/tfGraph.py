@@ -3,11 +3,12 @@ import tensorflow as tf
 __author__ = 'Andres'
 
 
-class SequentialModel(object):
+class TFGraph(object):
     """
-    This class is meant to represent a Sequential Neural Network Model.
+    This class is meant to represent a tensorflow graph.
     It is initialized empty and one can add different types of layers to it.
-    The output of the network is accessed with the output() function
+    The output of the network is accessed with output()
+    The input of the function is a placeholder and can be set with input()
 
     input_shape : Shape of the input (with batch size)
     """
@@ -60,7 +61,6 @@ class SequentialModel(object):
                                           [1,1,1,1], name+'_1', "SAME")
         self._outputSetter(tf.nn.relu(temp1) + self._output)
         self.addConvLayer(filter_shape, input_channels, output_channels, stride, name+'_2', padding)
-
 
     def addConvLayerWithoutNonLin(self, filter_shape, input_channels, output_channels, stride, name, padding="SAME"):
         self._outputSetter(self._convLayerWithoutNonLin(self._output, filter_shape, input_channels, output_channels,

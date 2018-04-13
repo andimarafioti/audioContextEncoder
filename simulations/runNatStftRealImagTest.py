@@ -1,7 +1,7 @@
 import tensorflow as tf
-from tensorflow.contrib import slim
+# from tensorflow.contrib import slim
 
-from network.sequentialModel import SequentialModel
+from network.tfGraph import TFGraph
 from network.stftRealImagContextEncoder import StftRealImagContextEncoder
 
 __author__ = 'Andres'
@@ -17,7 +17,7 @@ batch_size = 256
 fft_frame_length = 512
 fft_frame_step = 128
 
-aModel = SequentialModel(shapeOfInput=(batch_size, window_size), name="context encoder")
+aModel = TFGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
 aModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
 aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 37, 257, 2)
@@ -66,8 +66,8 @@ with tf.variable_scope("Decoder"):
 
 print(aModel.description())
 
-model_vars = tf.trainable_variables()
-slim.model_analyzer.analyze_vars(model_vars, print_info=True)
+# model_vars = tf.trainable_variables()
+# slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftRealImagContextEncoder(model=aModel, batch_size=batch_size, stft=stft, window_size=window_size,
                                                gap_length=gap_length, learning_rate=1e-4, name='nat_mag_real_imag_1_')

@@ -1,6 +1,7 @@
 import sys
 import os
 
+from network.stftPhaseContextEncoder import StftPhaseContextEncoder
 from utils.stftForTheInpaintingSetting import StftForTheInpaintingSetting
 
 sys.path.insert(0, '../')
@@ -10,8 +11,7 @@ import socket
 if 'omenx' in socket.gethostname():
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-from network.sequentialModel import SequentialModel
-from network.stftGapContextEncoder import StftGapContextEncoder
+from network.tfGraph import TFGraph
 
 __author__ = 'Andres'
 
@@ -26,7 +26,7 @@ batch_size = 256
 fft_window_length = 512
 fft_hop_size = 128
 
-aTargetModel = SequentialModel(shapeOfInput=(batch_size, signal_length), name="Target Model")
+aTargetModel = TFGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
 anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal_length,
                                                                     gap_length=gap_length,
                                                                     fft_window_length=fft_window_length,
@@ -34,10 +34,10 @@ anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal
 anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 aTargetModel.divideComplexOutputIntoMagAndPhase()  # (256, 11, 257, 2)
 
-aModel = SequentialModel(shapeOfInput=(batch_size, signal_length), name="context encoder")
+aModel = TFGraph(shapeOfInput=(batch_size, signal_length), name="context encoder")
 
 anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
-aModel.divideComplexOutputIntoRealAndImaginaryParts()
+aModel.divideComplexOutputIntoMagAndPhase()
 aModel.addReshape((batch_size, 16, 257, 4))
 
 with tf.variable_scope("Encoder"):
@@ -71,7 +71,7 @@ with tf.variable_scope("Decoder"):
 
     aModel.addReshape((batch_size, 11, 257, 32))
 
-    aModel.addDeconvLayerWithoutNonLin(filter_shape=(5, 89), input_channels=32, output_channels=2,
+    aModel.addDeconvLayerWithoutNonLin(filter_shape=(5, 89), input_channels=32, output_channels=1,
                                        stride=(1, 1, 1, 1), name="Last_Deconv")
 
 print(aModel.description())
@@ -79,6 +79,6 @@ print(aModel.description())
 model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
-aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=signal_length,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_mag_phase_gap_')
+aContextEncoderNetwork = StftPhaseContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=signal_length,
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_mag_phase_times_mag_gap_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)

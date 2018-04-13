@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from network.sequentialModel import SequentialModel
-from network.stftTestContextEncoder import StftTestContextEncoder
+from network.tfGraph import TFGraph
+from network.stftMagContextEncoder import StftTestContextEncoder
 
 __author__ = 'Andres'
 
@@ -13,7 +13,7 @@ window_size = 5120
 gap_length = 1024
 batch_size = 256
 
-aModel = SequentialModel(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
+aModel = TFGraph(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
 
 dataset = aModel.output()
 signal_length = window_size - gap_length

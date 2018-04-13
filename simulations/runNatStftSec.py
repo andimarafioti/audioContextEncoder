@@ -25,19 +25,19 @@ max	    30.251670154	1465.634765625
 import tensorflow as tf
 
 from network.contextEncoder import ContextEncoderNetwork
-from network.sequentialModel import SequentialModel
+from network.tfGraph import TFGraph
 
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-train_filename = 'train_full_w5120_g1024_h512_ex18978619.tfrecords'
-valid_filename = 'valid_full_w5120_g1024_h512_ex893971.tfrecords'
+train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
+valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 
 window_size = 5120
 gap_length = 1024
 batch_size = 256
 
-aModel = SequentialModel(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
+aModel = TFGraph(shapeOfInput=(batch_size, window_size - gap_length), name="context encoder")
 
 dataset = aModel.output()
 signal_length = window_size - gap_length
@@ -47,7 +47,7 @@ stacked_halfs = tf.stack([first_half, second_half], axis=1)
 
 with tf.name_scope('Energy_Spectogram'):
     fft_frame_length = 512
-    fft_frame_step = 64
+    fft_frame_step = 128
     stft = tf.contrib.signal.stft(signals=stacked_halfs, frame_length=fft_frame_length, frame_step=fft_frame_step)
     real_stft = tf.real(stft)
     imag_stft = tf.imag(stft)
@@ -68,13 +68,13 @@ with tf.variable_scope("Encoder"):
     filter_widths = [(9, 33), (5, 9), (3, 3)]
     input_channels = [2, 32, 64]
     output_channels = [32, 64, 128]
-    strides = [[1, 2, 4, 1], [1, 2, 4, 1], [1, 3, 4, 1]]
+    strides = [[1, 2, 4, 1], [1, 2, 4, 1], [1, 2, 4, 1]]
     names = ['First_Conv', 'Second_Conv', 'Third_Conv']
     aModel.addSeveralConvLayers(filter_shapes=filter_widths, input_channels=input_channels,
                                 output_channels=output_channels, strides=strides, names=names)
 
-aModel.addReshape((batch_size, 3200))
-aModel.addFullyConnectedLayer(3200, 2048, 'Fully')
+aModel.addReshape((batch_size, 2560))
+aModel.addFullyConnectedLayer(2560, 2048, 'Fully')
 aModel.addRelu()
 aModel.addReshape((batch_size, 1, 32, 64))
 
@@ -90,6 +90,7 @@ with tf.variable_scope("Decoder"):
                                        stride=(1, 1, 2, 1), name="Last_Deconv")
     aModel.addReshape((batch_size, gap_length))
 
+print(aModel.description())
 aContextEncoderNetwork = ContextEncoderNetwork(model=aModel, batch_size=batch_size, window_size=window_size,
                                                gap_length=gap_length, learning_rate=1e-5, name='nat_full_stft_2')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
