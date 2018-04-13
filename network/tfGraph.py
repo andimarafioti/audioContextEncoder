@@ -158,7 +158,6 @@ class TFGraph(object):
         assert(len(filter_shape) == 2), "filter must have 2 dimensions!"
         with tf.variable_scope(name, reuse=False):
             layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], input_channels, output_channels])
-            # layers_biases = self._bias_variable([output_channels])
             conv = tf.nn.conv2d(input_signal, layers_filters, strides=stride, padding=padding)
             return conv
 
@@ -173,7 +172,6 @@ class TFGraph(object):
 
         with tf.variable_scope(name, reuse=False):
             layers_filters = self._weight_variable([filter_shape[0], filter_shape[1], output_channels, input_channels])
-            # layers_biases = self._bias_variable([output_channels])
             deconv = tf.nn.conv2d_transpose(input_signal, layers_filters, strides=strides, padding=padding,
                                             output_shape=output_shape)
             return deconv
@@ -181,8 +179,7 @@ class TFGraph(object):
     def _linearLayer(self, input_signal, input_size, output_size, name):
         with tf.variable_scope(name, reuse=False):
             weights = self._weight_variable([input_size, output_size])
-            # biases = self._bias_variable(output_size)
-            linear_function = tf.matmul(input_signal, weights)  # + biases
+            linear_function = tf.matmul(input_signal, weights)
             return linear_function
 
     def _weight_variable(self, shape):
