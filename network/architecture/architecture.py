@@ -4,9 +4,11 @@ __author__ = 'Andres'
 
 
 class Architecture(object):
-    def __init__(self, targetShape):
-        self._input = tf.placeholder(tf.float32, shape=self._inputShape(), name='input_data')
-        self._target = tf.placeholder(tf.float32, shape=targetShape, name='target_data')
+    def __init__(self):
+        self._input = tf.placeholder(tf.float32, shape=self.inputShape(), name='input_data')
+        self._output = self._network(self._input)
+        self._target = tf.placeholder(tf.float32, shape=self._output.shape, name='target_data')
+        self._lossSummaries = []
         self._loss = self._lossGraph()
 
     def input(self):
@@ -18,6 +20,9 @@ class Architecture(object):
     def loss(self):
         return self._loss
 
+    def lossSummaries(self):
+        return self._lossSummaries
+
     def _preprocessData(self, data):
         return data
 
@@ -25,15 +30,12 @@ class Architecture(object):
         return data
 
     def _lossGraph(self):
-        return self._lossFunction(self._postprocessData(self._network(self._preprocessData(self._input))))
-
-    def _lossFunction(self, processedData):
         raise NotImplementedError("Subclass Responsibility")
 
     def _network(self, data):
         raise NotImplementedError("Subclass Responsibility")
 
-    def _inputShape(self):
+    def inputShape(self):
         raise NotImplementedError("Subclass Responsibility")
 
     def _targetShape(self):
