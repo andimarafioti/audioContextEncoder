@@ -22,5 +22,4 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
                                   name='Decoder')
 
 inputShape = (batchSize, 16, 257, 4)
-targetShape = (batchSize, 11, 257, 2)
-aContextEncoderArchitecture = ContextEncoder(inputShape, targetShape, encoderParams, fullyParams, decoderParams)
+aContextEncoderArchitecture = ContextEncoder(inputShape, encoderParams, decoderParams, fullyParams)
