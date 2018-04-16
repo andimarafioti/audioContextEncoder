@@ -6,39 +6,31 @@ __author__ = 'Andres'
 
 
 class ContextEncoder(Architecture):
-    def __init__(self, inputShape, targetShape, encoderParams, decoderParams, fullyParams):
+    def __init__(self, inputShape, encoderParams, decoderParams, fullyParams):
         self._inputShape = inputShape
         self._encoderParams = encoderParams
         self._decoderParams = decoderParams
         self._fullyParams = fullyParams
-        super().__init__(targetShape)
+        super().__init__()
 
-    def _inputShape(self):
+    def inputShape(self):
         return self._inputShape
 
-    def _lossFunction(self, processedData):
+    def _lossGraph(self):
         with tf.variable_scope("Loss"):
-            gap_stft = self._target_model.output()
+            targetSquaredNorm = tf.reduce_sum(tf.square(self._target), axis=[1, 2, 3])
 
-            norm_orig = self._squaredEuclideanNorm(gap_stft, onAxis=[1, 2, 3])
-            norm_orig_summary = tf.summary.scalar("norm_orig", tf.reduce_min(norm_orig))
-
-            error = gap_stft - self._reconstructed_input_data
-            # Nati comment: here you should use only one reduce sum function
+            error = self._target - self._output
             error_per_example = tf.reduce_sum(tf.square(error), axis=[1, 2, 3])
 
-            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example * (1 + 5 / (norm_orig+1e-2)))
-
-            rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
-
-            trainable_vars = tf.trainable_variables()
-            lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars if 'bias' not in v.name]) * 1e-2
-            l2_loss_summary = tf.summary.scalar("lossL2", lossL2)
-
+            reconstruction_loss = 0.5 * tf.reduce_sum(error_per_example * (1 + 5 / (targetSquaredNorm+1e-4)))
+            lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in tf.trainable_variables()]) * 1e-2
             total_loss = tf.add_n([reconstruction_loss, lossL2])
-            total_loss_summary = tf.summary.scalar("total_loss", total_loss)
 
-            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, norm_orig_summary, total_loss_summary])
+            total_loss_summary = tf.summary.scalar("total_loss", total_loss)
+            l2_loss_summary = tf.summary.scalar("lossL2", lossL2)
+            rec_loss_summary = tf.summary.scalar("reconstruction_loss", reconstruction_loss)
+            self._lossSummaries = tf.summary.merge([rec_loss_summary, l2_loss_summary, total_loss_summary])
 
             return total_loss
 
@@ -83,20 +75,20 @@ class ContextEncoder(Architecture):
                                            names=self._decoderParams.convNames()[0:3])
 
             currentShape = decoder.outputShape()
-            decoder.addReshape((currentShape[0], currentShape[1] / 4, currentShape[3], currentShape[2] * 4))
+            decoder.addReshape((currentShape[0], int(currentShape[1] / 4), currentShape[3], currentShape[2] * 4))
 
             decoder.addDeconvLayer(filter_shape=self._decoderParams.filterShapes()[3],
-                                   input_channels=self._decoderParams.inputChannels()[3],
+                                   input_channels=currentShape[2] * 4,
                                    output_channels=self._decoderParams.outputChannels()[3],
                                    stride=self._decoderParams.strides()[3],
                                    name=self._decoderParams.convNames()[3])
             decoder.addBatchNormalization()
 
             currentShape = decoder.outputShape()
-            decoder.addReshape((currentShape[0], currentShape[3], currentShape[2], currentShape[1]))
+            decoder.addReshape((currentShape[0], currentShape[3], int(currentShape[2] / 2), currentShape[1]*2))
 
             decoder.addDeconvLayerWithoutNonLin(filter_shape=self._decoderParams.filterShapes()[4],
-                                                input_channels=self._decoderParams.inputChannels()[4],
+                                                input_channels=currentShape[1] * 2,
                                                 output_channels=self._decoderParams.outputChannels()[4],
                                                 stride=self._decoderParams.strides()[4],
                                                 name=self._decoderParams.convNames()[4])
