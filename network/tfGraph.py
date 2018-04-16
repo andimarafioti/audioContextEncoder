@@ -29,6 +29,9 @@ class TFGraph(object):
     def output(self):
         return self._output
 
+    def outputShape(self):
+        return self.output().get_shape().as_list()
+
     def setOutputTo(self, value):
         self._outputSetter(value)
 
