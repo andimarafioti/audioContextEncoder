@@ -27,6 +27,7 @@ class TFGraph(object):
         return self._isTraining
 
     def output(self):
+        print(self.description())
         return self._output
 
     def outputShape(self):
