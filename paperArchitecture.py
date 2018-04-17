@@ -29,6 +29,4 @@ anStftForTheContextEncoder = StftForTheContextEncoder(signalLength=5120, gapLeng
                                                       fftHopSize=128)
 aContextEncoderSystem = ContextEncoderSystem(aContextEncoderArchitecture, batchSize,
                                              anStftForTheContextEncoder, "Context_Encoder")
-
-
-
+aContextEncoderSystem.train("nsynth_train_w5120_g1024_h512.tfrecords", "nsynth_valid_w5120_g1024_h512.tfrecords", 1e-3)
