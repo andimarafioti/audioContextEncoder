@@ -27,12 +27,6 @@ class Architecture(object):
     def isTraining(self):
         return self._isTraining
 
-    def _preprocessData(self, data):
-        return data
-
-    def _postprocessData(self, data):
-        return data
-
     def _lossGraph(self):
         raise NotImplementedError("Subclass Responsibility")
 
