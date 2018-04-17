@@ -31,7 +31,7 @@ class TFGraph(object):
         return self._output
 
     def outputShape(self):
-        return self.output().get_shape().as_list()
+        return self._output.get_shape().as_list()
 
     def setOutputTo(self, value):
         self._outputSetter(value)
