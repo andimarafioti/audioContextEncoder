@@ -69,7 +69,7 @@ class TestStftForTheInpaintingSetting(TestCase):
 
     def test04TheStftProducesAnSTFTOfTheExpectedShapeForTheGap(self):
         batch_size = 32
-        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
+        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), isTraining=None,name="Target Model")
 
         self.anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 
@@ -114,7 +114,7 @@ class TestStftForTheInpaintingSetting(TestCase):
 
     def test07TheStftOfTheContextHasTheExpectedShape(self):
         batch_size = 32
-        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), name="Target Model")
+        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), isTraining=None, name="Target Model")
 
         self.anStftForTheInpaintingSetting.addStftForTheContextTo(aTargetModel)
 
