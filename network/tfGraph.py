@@ -23,9 +23,6 @@ class TFGraph(object):
     def input(self):
         return self._input
 
-    def isTraining(self):
-        return self._isTraining
-
     def output(self):
         print(self.description())
         return self._output

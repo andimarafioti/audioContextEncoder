@@ -10,7 +10,6 @@ class ContextEncoderArchitecture(Architecture):
     def __init__(self, inputShape, encoderParams, decoderParams, fullyParams):
         with tf.variable_scope("ContextEncoderArchitecture"):
             self._inputShape = inputShape
-            self._isTraining = tf.placeholder(tf.bool, name='is_training')
             self._encoderParams = encoderParams
             self._decoderParams = decoderParams
             self._fullyParams = fullyParams
