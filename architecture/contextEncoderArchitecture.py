@@ -6,7 +6,7 @@ from network.tfGraph import TFGraph
 __author__ = 'Andres'
 
 
-class ContextEncoder(Architecture):
+class ContextEncoderArchitecture(Architecture):
     def __init__(self, inputShape, encoderParams, decoderParams, fullyParams):
         self._inputShape = inputShape
         self._encoderParams = encoderParams
