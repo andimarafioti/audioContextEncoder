@@ -15,6 +15,9 @@ class Architecture(object):
     def input(self):
         return self._input
 
+    def output(self):
+        return self._output
+
     def target(self):
         return self._target
 
