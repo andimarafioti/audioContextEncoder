@@ -12,7 +12,7 @@ class DNNSystem(object):
     def optimizer(self, learningRate):
         raise NotImplementedError("Subclass Responsibility")
 
-    def _trainingFeedDict(self, data):
+    def _trainingFeedDict(self, data, sess):
         raise NotImplementedError("Subclass Responsibility")
 
     def _evaluate(self, summariesDict, feed_dict, validReader, sess):
@@ -59,7 +59,7 @@ class DNNSystem(object):
                         print("End of queue!")
                         break
 
-                    feed_dict = self._trainingFeedDict(data)
+                    feed_dict = self._trainingFeedDict(data, sess)
                     sess.run(optimizer, feed_dict=feed_dict)
 
                     if step % 40 == 0:
