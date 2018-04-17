@@ -4,22 +4,22 @@ import numpy as np
 import tensorflow as tf
 
 from network.emptyTFGraph import EmptyTfGraph
-from utils.stftForTheInpaintingSetting import StftForTheInpaintingSetting
+from utils.stftForTheContextEncoder import StftForTheContextEncoder
 
 __author__ = 'Andres'
 
 
-class TestStftForTheInpaintingSetting(TestCase):
+class TestStftForTheContextEncoder(TestCase):
     def setUp(self):
         self.signal_length = 5120
         self.gap_length = 1024
         self.fft_window_length = 512
         self.fft_hop_size = 128
 
-        self.anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=self.signal_length,
-                                                                         gap_length=self.gap_length,
-                                                                    fft_window_length=self.fft_window_length,
-                                                                    fft_hop_size=self.fft_hop_size)
+        self.anStftForTheInpaintingSetting = StftForTheContextEncoder(signal_length=self.signal_length,
+                                                                      gap_length=self.gap_length,
+                                                                      fft_window_length=self.fft_window_length,
+                                                                      fft_hop_size=self.fft_hop_size)
 
     def test01TheStftTakesTheInpaintingParametersAsInput(self):
         self.assertEquals(self.anStftForTheInpaintingSetting.signalLength(), self.signal_length)
@@ -32,18 +32,18 @@ class TestStftForTheInpaintingSetting(TestCase):
 
         fft_window_length = 1024
         fft_hop_size = 128
-        anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=self.signal_length,
-                                                                    gap_length=self.gap_length,
-                                                                    fft_window_length=fft_window_length,
-                                                                    fft_hop_size=fft_hop_size)
+        anStftForTheInpaintingSetting = StftForTheContextEncoder(signal_length=self.signal_length,
+                                                                 gap_length=self.gap_length,
+                                                                 fft_window_length=fft_window_length,
+                                                                 fft_hop_size=fft_hop_size)
         self.assertEquals(anStftForTheInpaintingSetting.padding(), fft_window_length - fft_hop_size)
 
         fft_window_length = 1024
         fft_hop_size = 256
-        anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=self.signal_length,
-                                                                    gap_length=self.gap_length,
-                                                                    fft_window_length=fft_window_length,
-                                                                    fft_hop_size=fft_hop_size)
+        anStftForTheInpaintingSetting = StftForTheContextEncoder(signal_length=self.signal_length,
+                                                                 gap_length=self.gap_length,
+                                                                 fft_window_length=fft_window_length,
+                                                                 fft_hop_size=fft_hop_size)
         self.assertEquals(anStftForTheInpaintingSetting.padding(), fft_window_length - fft_hop_size)
 
     def test03TheStftKnowsWhatSignalItShouldTakeForTheSTFTOfTheGap(self):
@@ -59,24 +59,23 @@ class TestStftForTheInpaintingSetting(TestCase):
         fft_window_length = 128
         fft_hop_size = 32
 
-        anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=self.signal_length,
-                                                                    gap_length=self.gap_length,
-                                                                    fft_window_length=fft_window_length,
-                                                                    fft_hop_size=fft_hop_size)
+        anStftForTheInpaintingSetting = StftForTheContextEncoder(signal_length=self.signal_length,
+                                                                 gap_length=self.gap_length,
+                                                                 fft_window_length=fft_window_length,
+                                                                 fft_hop_size=fft_hop_size)
         produced_signal = anStftForTheInpaintingSetting._removeExtraSidesForSTFTOfGap(fake_batch_of_signal)
         padding = fft_window_length - fft_hop_size
         np.testing.assert_almost_equal(fake_batch_of_signal[:, gap_begins - padding:gap_ends + padding], produced_signal)
 
     def test04TheStftProducesAnSTFTOfTheExpectedShapeForTheGap(self):
         batch_size = 32
-        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), isTraining=None,name="Target Model")
-
-        self.anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
+        aBatchOfSignals = tf.placeholder(tf.float32, shape=(batch_size, self.signal_length), name='input_data')
+        aStft = self.anStftForTheInpaintingSetting.stftForGapOf(aBatchOfSignals)
 
         framesOnGap = (((self.gap_length + self.anStftForTheInpaintingSetting.padding()*2)-self.fft_window_length)/
                        self.fft_hop_size)+1
         binsPerFrame = self.fft_window_length//2+1
-        self.assertEquals(aTargetModel.output().shape.as_list(), [32, framesOnGap, binsPerFrame])
+        self.assertEquals(aStft.shape.as_list(), [32, framesOnGap, binsPerFrame])
 
     def test05TheStftRemovesTheGapCorrectly(self):
         fake_batch_of_signal = np.array([np.arange(self.signal_length)])
@@ -114,16 +113,15 @@ class TestStftForTheInpaintingSetting(TestCase):
 
     def test07TheStftOfTheContextHasTheExpectedShape(self):
         batch_size = 32
-        aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, self.signal_length), isTraining=None, name="Target Model")
-
-        self.anStftForTheInpaintingSetting.addStftForTheContextTo(aTargetModel)
+        aBatchOfSignals = tf.placeholder(tf.float32, shape=(batch_size, self.signal_length), name='input_data')
+        aStft = self.anStftForTheInpaintingSetting.stftForTheContextOf(aBatchOfSignals)
 
         side_length = (self.signal_length-self.gap_length)//2
         framesOnSides = ((side_length + self.anStftForTheInpaintingSetting.padding() - self.fft_window_length)
                          / self.fft_hop_size)+1
         binsPerFrame = self.fft_window_length//2+1
 
-        self.assertEquals(aTargetModel.output().shape.as_list(), [32, 2, framesOnSides, binsPerFrame])
+        self.assertEquals(aStft.shape.as_list(), [32, 2, framesOnSides, binsPerFrame])
 
     def test08TheStftProducesTheCorrectShapeWhenDoingTheInverseStftOnTheGap(self):
         batch_size = 32
