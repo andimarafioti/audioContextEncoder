@@ -12,7 +12,7 @@ class DNNSystem(object):
     def optimizer(self, learningRate):
         raise NotImplementedError("Subclass Responsibility")
 
-    def _trainingFeedDict(self, data, sess):
+    def _feedDict(self, data, sess, isTraining=True):
         raise NotImplementedError("Subclass Responsibility")
 
     def _evaluate(self, summariesDict, feed_dict, validReader, sess):
@@ -50,6 +50,7 @@ class DNNSystem(object):
                 trainReader = self._loadReader(trainTFRecordPath)
                 validReader = self._loadReader(validTFRecordPath)
                 trainReader.start()
+                validReader.start()
 
                 for step in range(1, int(numSteps)):
                     try:
@@ -59,7 +60,7 @@ class DNNSystem(object):
                         print("End of queue!")
                         break
 
-                    feed_dict = self._trainingFeedDict(data, sess)
+                    feed_dict = self._feedDict(data, sess, isTraining=True)
                     sess.run(optimizer, feed_dict=feed_dict)
 
                     if step % 40 == 0:
@@ -75,6 +76,7 @@ class DNNSystem(object):
 
             saver.save(sess, self.modelsPath(_modelNum + step))
             trainReader.finish()
+            validReader.finish()
             print("Finalizing at step:", _modelNum + step)
             print("Last saved model:", self.modelsPath(_modelNum + step))
 
