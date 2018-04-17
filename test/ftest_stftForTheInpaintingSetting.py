@@ -3,7 +3,6 @@ from unittest import TestCase
 import numpy as np
 import tensorflow as tf
 
-from network.emptyTFGraph import EmptyTfGraph
 from utils.stftForTheContextEncoder import StftForTheContextEncoder
 
 __author__ = 'Andres'
