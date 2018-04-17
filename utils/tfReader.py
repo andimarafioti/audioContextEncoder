@@ -19,8 +19,8 @@ class TFReader(object):
 
     def dataOperation(self, session):
         try:
-            sides, gaps = session.run(self._audios)
-            return sides, gaps
+            audios = session.run(self._audios)
+            return audios
         except OutOfRangeError:
             raise StopIteration
 
