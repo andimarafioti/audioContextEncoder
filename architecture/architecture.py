@@ -5,10 +5,10 @@ __author__ = 'Andres'
 
 class Architecture(object):
     def __init__(self):
+        self._isTraining = tf.placeholder(tf.bool, name='is_training')
         self._input = tf.placeholder(tf.float32, shape=self.inputShape(), name='input_data')
         self._output = self._network(self._input)
         self._target = tf.placeholder(tf.float32, shape=self._output.shape, name='target_data')
-        self._isTraining = tf.placeholder(tf.bool, name='is_training')
         self._lossSummaries = []
         self._loss = self._lossGraph()
 
