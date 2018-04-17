@@ -7,12 +7,12 @@ __author__ = 'Andres'
 
 
 class StftForTheContextEncoder(object):
-    def __init__(self, signal_length, gap_length, fft_window_length, fft_hop_size):
+    def __init__(self, signalLength, gapLength, fftWindowLength, fftHopSize):
         super(StftForTheContextEncoder, self).__init__()
-        self._signalLength = signal_length
-        self._gapLength = gap_length
-        self._fftWindowLength = fft_window_length
-        self._fftHopSize = fft_hop_size
+        self._signalLength = signalLength
+        self._gapLength = gapLength
+        self._fftWindowLength = fftWindowLength
+        self._fftHopSize = fftHopSize
 
     def signalLength(self):
         return self._signalLength
