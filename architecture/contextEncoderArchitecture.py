@@ -8,11 +8,13 @@ __author__ = 'Andres'
 
 class ContextEncoderArchitecture(Architecture):
     def __init__(self, inputShape, encoderParams, decoderParams, fullyParams):
-        self._inputShape = inputShape
-        self._encoderParams = encoderParams
-        self._decoderParams = decoderParams
-        self._fullyParams = fullyParams
-        super().__init__()
+        with tf.variable_scope("ContextEncoderArchitecture"):
+            self._inputShape = inputShape
+            self._isTraining = tf.placeholder(tf.bool, name='is_training')
+            self._encoderParams = encoderParams
+            self._decoderParams = decoderParams
+            self._fullyParams = fullyParams
+            super().__init__()
 
     def inputShape(self):
         return self._inputShape
@@ -43,7 +45,7 @@ class ContextEncoderArchitecture(Architecture):
 
     def _encode(self, data):
         with tf.variable_scope("Encoder"):
-            encoder = TFGraph(data, "Encoder")
+            encoder = TFGraph(data, self._isTraining, "Encoder")
 
             encoder.addSeveralConvLayers(filter_shapes=self._encoderParams.filterShapes(),
                                          input_channels=self._encoderParams.inputChannels(),
@@ -54,7 +56,7 @@ class ContextEncoderArchitecture(Architecture):
 
     def _fullyConnect(self, data):
         with tf.variable_scope("Fully"):
-            fullyConnected = TFGraph(data, "Fully")
+            fullyConnected = TFGraph(data, self._isTraining, "Fully")
 
             fullyConnected.addReshape((self._fullyParams.batchSize(), self._fullyParams.inputChannels()))
             fullyConnected.addFullyConnectedLayer(self._fullyParams.inputChannels(),
@@ -67,7 +69,7 @@ class ContextEncoderArchitecture(Architecture):
 
     def _decode(self, data):
         with tf.variable_scope("Decoder"):
-            decoder = TFGraph(data, "Decoder")
+            decoder = TFGraph(data, self._isTraining, "Decoder")
 
             decoder.addSeveralDeconvLayers(filter_shapes=self._decoderParams.filterShapes()[0:-2],
                                            input_channels=self._decoderParams.inputChannels()[0:-2],

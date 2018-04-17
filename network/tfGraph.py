@@ -13,10 +13,10 @@ class TFGraph(object):
     input_shape : Shape of the input (with batch size)
     """
 
-    def __init__(self, inputSignal, name):
+    def __init__(self, inputSignal, isTraining, name):
         self._name = name
         self._input = inputSignal
-        self._isTraining = tf.placeholder(tf.bool, name='is_training')
+        self._isTraining = isTraining
         self._description = "---------\n" + name + "\n---------"
         self._outputSetter(self._input)
 
