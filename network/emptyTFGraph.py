@@ -14,6 +14,6 @@ class EmptyTfGraph(TFGraph):
     input_shape : Shape of the input (with batch size)
     """
 
-    def __init__(self, shapeOfInput, name):
+    def __init__(self, shapeOfInput, isTraining, name):
         inputSignal = tf.placeholder(tf.float32, shape=shapeOfInput, name='input_data')
-        super().__init__(inputSignal=inputSignal, name=name)
+        super().__init__(inputSignal=inputSignal, isTraining=isTraining, name=name)
