@@ -40,15 +40,16 @@ class TFRecordGenerator(object):
                 except NoBackendError:
                     print("No backend for file:", file_name)
                     continue
-                sides, gaps = self._exampleProcessor.process(audio)
-                if sides.shape[0] is 0:
+
+                windows = self._exampleProcessor.process(audio)
+                if windows.shape[0] is 0:
                     print("Got a completely silenced signal! with path:", file_name)
                     continue
 
-                for side, gap in zip(sides, gaps):
-                    self._createFeature(side, gap, writer)
+                for window in windows:
+                    self._createFeature(window, writer)
 
-                count, total = self._notifyIfNeeded(count + len(sides), total)
+                count, total = self._notifyIfNeeded(count + len(windows), total)
                 sys.stdout.flush()
         writer.close()
         end = time.time() - start
@@ -56,13 +57,11 @@ class TFRecordGenerator(object):
         print("there were: ", total + count)
         print("wow, that took", end, "seconds... might want to change that to mins :)")
 
-    def _createFeature(self, side, gap, writer):
-        side_bytes = side.astype(np.float32).tostring()
-        gap_bytes = gap.astype(np.float32).tostring()
+    def _createFeature(self, window, writer):
+        window_bytes = window.astype(np.float32).tostring()
 
         example = tf.train.Example(features=tf.train.Features(feature={
-            'valid/sides': self._bytes_feature(side_bytes),
-            'valid/gaps': self._bytes_feature(gap_bytes)}))
+            'valid/windows': self._bytes_feature(window_bytes)}))
 
         writer.write(example.SerializeToString())
 
