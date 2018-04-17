@@ -5,9 +5,10 @@ from tensorflow.python.framework.errors_impl import OutOfRangeError
 
 
 class TFReader(object):
-    def __init__(self, path_to_tfRecord_file, window_size, num_epochs=10, capacity=100000):
+    def __init__(self, path_to_tfRecord_file, window_size, batchSize, num_epochs=10, capacity=100000):
         self._path_to_tfRecord_file = path_to_tfRecord_file
         self._capacity = capacity
+        self._batchSize = batchSize
         self._window_size = window_size
         self._audios = self._read_and_decode(tf.train.string_input_producer([path_to_tfRecord_file],
                                                                             num_epochs=num_epochs))
@@ -36,7 +37,8 @@ class TFReader(object):
         windows = tf.decode_raw(features['valid/windows'], tf.float32)
         windows = tf.reshape(windows, [self._window_size])
 
-        audios = tf.train.shuffle_batch([windows], batch_size=256, min_after_dequeue=int(self._capacity * 0.5),
+        audios = tf.train.shuffle_batch([windows], batch_size=self._batchSize,
+                                        min_after_dequeue=int(self._capacity * 0.5),
                                         capacity=self._capacity,
                                         num_threads=4)
         return audios
