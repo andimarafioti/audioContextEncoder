@@ -26,6 +26,9 @@ class DNNSystem(object):
 
     def train(self, trainTFRecordPath, validTFRecordPath, learningRate, numSteps=2e2, restoreNum=None):
         with tf.Session() as sess:
+            trainReader = self._loadReader(trainTFRecordPath)
+            validReader = self._loadReader(validTFRecordPath)
+
             saver = tf.train.Saver(max_to_keep=100)
             path = self.modelsPath(restoreNum)
             _modelNum = get_trailing_number(path[:-5])
@@ -47,8 +50,6 @@ class DNNSystem(object):
             optimizer = self.optimizer(learningRate)
 
             try:
-                trainReader = self._loadReader(trainTFRecordPath)
-                validReader = self._loadReader(validTFRecordPath)
                 trainReader.start()
                 validReader.start()
 
@@ -56,8 +57,7 @@ class DNNSystem(object):
                     try:
                         data = trainReader.dataOperation(session=sess)
                     except StopIteration:
-                        print(step)
-                        print("End of queue!")
+                        print("End of queue at step", step)
                         break
 
                     feed_dict = self._feedDict(data, sess, isTraining=True)
