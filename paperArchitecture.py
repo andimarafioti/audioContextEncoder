@@ -1,6 +1,6 @@
-from network.architecture.contextEncoder import ContextEncoder
-from network.architecture.convNetworkParams import ConvNetworkParams
-from network.architecture.fullyLayerParams import FullyLayerParams
+from architecture.contextEncoder import ContextEncoder
+from architecture.convNetworkParams import ConvNetworkParams
+from architecture.fullyLayerParams import FullyLayerParams
 
 batchSize = 256
 

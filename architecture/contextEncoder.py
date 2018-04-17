@@ -1,5 +1,6 @@
 import tensorflow as tf
-from network.architecture.architecture import Architecture
+
+from architecture.architecture import Architecture
 from network.tfGraph import TFGraph
 
 __author__ = 'Andres'
