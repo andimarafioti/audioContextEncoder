@@ -1,6 +1,8 @@
 from architecture.contextEncoderArchitecture import ContextEncoderArchitecture
 from architecture.convNetworkParams import ConvNetworkParams
 from architecture.fullyLayerParams import FullyLayerParams
+from system.contextEncoderSystem import ContextEncoderSystem
+from utils.stftForTheContextEncoder import StftForTheContextEncoder
 
 batchSize = 256
 
@@ -23,3 +25,10 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
 
 inputShape = (batchSize, 16, 257, 4)
 aContextEncoderArchitecture = ContextEncoderArchitecture(inputShape, encoderParams, decoderParams, fullyParams)
+anStftForTheContextEncoder = StftForTheContextEncoder(signalLength=5120, gapLength=1024, fftWindowLength=512,
+                                                      fftHopSize=128)
+aContextEncoderSystem = ContextEncoderSystem(aContextEncoderArchitecture, batchSize,
+                                             anStftForTheContextEncoder, "Context_Encoder")
+
+
+
