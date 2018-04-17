@@ -37,6 +37,3 @@ class Architecture(object):
 
     def inputShape(self):
         raise NotImplementedError("Subclass Responsibility")
-
-    def _targetShape(self):
-        raise NotImplementedError("Subclass Responsibility")
