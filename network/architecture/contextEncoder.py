@@ -68,28 +68,34 @@ class ContextEncoder(Architecture):
         with tf.variable_scope("Decoder"):
             decoder = TFGraph(data, "Decoder")
 
-            decoder.addSeveralDeconvLayers(filter_shapes=self._decoderParams.filterShapes()[0:3],
-                                           input_channels=self._decoderParams.inputChannels()[0:3],
-                                           output_channels=self._decoderParams.outputChannels()[0:3],
-                                           strides=self._decoderParams.strides()[0:3],
-                                           names=self._decoderParams.convNames()[0:3])
+            decoder.addSeveralDeconvLayers(filter_shapes=self._decoderParams.filterShapes()[0:-2],
+                                           input_channels=self._decoderParams.inputChannels()[0:-2],
+                                           output_channels=self._decoderParams.outputChannels()[0:-2],
+                                           strides=self._decoderParams.strides()[0:-2],
+                                           names=self._decoderParams.convNames()[0:-2])
 
             currentShape = decoder.outputShape()
-            decoder.addReshape((currentShape[0], int(currentShape[1] / 4), currentShape[3], currentShape[2] * 4))
+            constantForReshape = int(4 * currentShape[1] / currentShape[2])
+            decoder.addReshape((currentShape[0], int(currentShape[1] / constantForReshape),
+                                currentShape[3], currentShape[2] * constantForReshape))
 
-            decoder.addDeconvLayer(filter_shape=self._decoderParams.filterShapes()[3],
-                                   input_channels=currentShape[2] * 4,
-                                   output_channels=self._decoderParams.outputChannels()[3],
-                                   stride=self._decoderParams.strides()[3],
-                                   name=self._decoderParams.convNames()[3])
+            decoder.addDeconvLayer(filter_shape=self._decoderParams.filterShapes()[-2],
+                                   input_channels=currentShape[2] * constantForReshape,
+                                   output_channels=self._decoderParams.outputChannels()[-2],
+                                   stride=self._decoderParams.strides()[-2],
+                                   name=self._decoderParams.convNames()[-2])
             decoder.addBatchNormalization()
 
             currentShape = decoder.outputShape()
-            decoder.addReshape((currentShape[0], currentShape[3], int(currentShape[2] / 2), currentShape[1]*2))
+            constantForReshape = int(self._decoderParams.strides()[-2][2])
 
-            decoder.addDeconvLayerWithoutNonLin(filter_shape=self._decoderParams.filterShapes()[4],
-                                                input_channels=currentShape[1] * 2,
-                                                output_channels=self._decoderParams.outputChannels()[4],
-                                                stride=self._decoderParams.strides()[4],
-                                                name=self._decoderParams.convNames()[4])
+            decoder.addReshape((currentShape[0], currentShape[3],
+                                int(currentShape[2] / constantForReshape),
+                                currentShape[1] * constantForReshape))
+
+            decoder.addDeconvLayerWithoutNonLin(filter_shape=self._decoderParams.filterShapes()[-1],
+                                                input_channels=currentShape[1] * constantForReshape,
+                                                output_channels=self._decoderParams.outputChannels()[-1],
+                                                stride=self._decoderParams.strides()[-1],
+                                                name=self._decoderParams.convNames()[-1])
             return decoder.output()
