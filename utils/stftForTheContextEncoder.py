@@ -32,15 +32,19 @@ class StftForTheContextEncoder(object):
     def stftForGapOf(self, aBatchOfSignals):
         assert len(aBatchOfSignals.shape) == 2
         signalWithoutExtraSides = self._removeExtraSidesForSTFTOfGap(aBatchOfSignals)
-        return tf.contrib.signal.stft(signals=signalWithoutExtraSides,
+        stft = tf.contrib.signal.stft(signals=signalWithoutExtraSides,
                                       frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
+        return self._divideComplexIntoRealAndImag(stft)
 
     def stftForTheContextOf(self, aBatchOfSignals):
         assert len(aBatchOfSignals.shape) == 2
-        signalWithoutGap = self._removeGap(aBatchOfSignals)
-        contextOfTheSignalPadded = self._addPaddingForStftOfContext(signalWithoutGap)
-        return tf.contrib.signal.stft(signals=contextOfTheSignalPadded,
+        leftAndRightSideStacked = self._removeGap(aBatchOfSignals)
+        leftAndRightSideStackedAndPadded = self._addPaddingForStftOfContext(leftAndRightSideStacked)
+        stftOfLeftAndRightSideStacked = tf.contrib.signal.stft(signals=leftAndRightSideStackedAndPadded,
                                       frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
+        realAndImagSTFTOfLeftAndRightSideStacked = self._divideComplexIntoRealAndImag(stftOfLeftAndRightSideStacked)
+        shape = realAndImagSTFTOfLeftAndRightSideStacked.get_shape().as_list()
+        return tf.reshape(realAndImagSTFTOfLeftAndRightSideStacked, (shape[0], shape[2], shape[3], shape[1]*shape[4]))
 
     def inverseStftOfGap(self, batchOfStftOfGap):
         window_fn = functools.partial(window_ops.hann_window, periodic=True)
@@ -75,3 +79,8 @@ class StftForTheContextEncoder(object):
         leftSidePadded = tf.concat((batchOfSides[:, 0], tf.zeros((batchSize, self.padding()))), axis=1)
         rightSidePadded = tf.concat((batchOfSides[:, 1], tf.zeros((batchSize, self.padding()))), axis=1)
         return tf.stack((leftSidePadded, rightSidePadded), axis=1)
+
+    def _divideComplexIntoRealAndImag(self, complexTensor):
+        real_part = tf.real(complexTensor)
+        imag_part = tf.imag(complexTensor)
+        return tf.stack([real_part, imag_part], axis=-1, name='divideComplexIntoRealAndImag')
