@@ -24,7 +24,7 @@ class DNNSystem(object):
     def _evaluationSummaries(self):
         raise NotImplementedError("Subclass Responsibility")
 
-    def train(self, trainTFRecordPath, validTFRecordPath, learningRate, numSteps=2e2, restoreNum=None):
+    def train(self, trainTFRecordPath, validTFRecordPath, learningRate, numSteps=6e5, restoreNum=None):
         with tf.Session() as sess:
             trainReader = self._loadReader(trainTFRecordPath)
             validReader = self._loadReader(validTFRecordPath)
