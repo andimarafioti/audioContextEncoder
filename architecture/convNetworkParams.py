@@ -8,9 +8,6 @@ class ConvNetworkParams(object):
         self._strides = strides
         self._name = name
 
-    def inputShape(self):
-        return self._inputShape
-
     def filterShapes(self):
         return self._filterShapes
 
