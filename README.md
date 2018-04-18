@@ -2,9 +2,6 @@
 
 This folder accompanies the research work on audio inpainting of small gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center.
 
-The paper uses google's Nsynth dataset as a training set. In order to recreate the used data, one needs to instantiate the TFRecordGenerator class with baseName='paper_recreation', pathToDataFolder='path/to/NSynth', window_size=5192, gapLength=1024, hopSize=512, learning_rate=1e-5.
+The paper uses both google's Nsynth dataset and the FMA dataset. In order to recreate the used dataset, execute in the parent folder either `python make_nsynthdataset.py` or  `python make_fmadataset.py` depending on which dataset you need. The output of the scripts are three `tfrecord` for training, validating and testing the model.
  
- With that dataset one can train the network following the 'train' notebook. 
- You can also use the 'test' notebook to see the results presented in the paper.
- 
- Finally, with the 'try' notebook one can try training the network with diferent parameters.
+To train the network, execute in the parent folder `python3 paperArchitecture.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
