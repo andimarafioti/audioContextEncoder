@@ -2,7 +2,7 @@ import os
 import sys
 
 from network.emptyTFGraph import EmptyTfGraph
-from utils.stftForTheContextEncoder import StftForTheContextEncoder
+from system.preAndPostProcessor import PreAndPostProcessor
 
 sys.path.insert(0, '../')
 import tensorflow as tf
@@ -32,10 +32,10 @@ fft_window_length = 512
 fft_hop_size = 128
 
 aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
-anStftForTheInpaintingSetting = StftForTheContextEncoder(signalLength=signal_length,
-                                                         gapLength=gap_length,
-                                                         fftWindowLength=fft_window_length,
-                                                         fftHopSize=fft_hop_size)
+anStftForTheInpaintingSetting = PreAndPostProcessor(signalLength=signal_length,
+                                                    gapLength=gap_length,
+                                                    fftWindowLength=fft_window_length,
+                                                    fftHopSize=fft_hop_size)
 anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
 aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
 

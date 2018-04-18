@@ -6,9 +6,9 @@ from tensorflow.contrib.signal.python.ops import window_ops
 __author__ = 'Andres'
 
 
-class StftForTheContextEncoder(object):
+class PreAndPostProcessor(object):
     def __init__(self, signalLength, gapLength, fftWindowLength, fftHopSize):
-        super(StftForTheContextEncoder, self).__init__()
+        super(PreAndPostProcessor, self).__init__()
         self._signalLength = signalLength
         self._gapLength = gapLength
         self._fftWindowLength = fftWindowLength

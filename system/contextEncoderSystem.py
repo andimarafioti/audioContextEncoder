@@ -8,12 +8,12 @@ __author__ = 'Andres'
 
 
 class ContextEncoderSystem(DNNSystem):
-    def __init__(self, architecture, batchSize, anStftForTheContextEncoder, name):
-        self._windowSize = anStftForTheContextEncoder.signalLength()
+    def __init__(self, architecture, batchSize, aPreProcessor, name):
+        self._windowSize = aPreProcessor.signalLength()
         self._batchSize = batchSize
         self._audio = tf.placeholder(tf.float32, shape=(batchSize, self._windowSize), name='audio_data')
-        self._stftForGap = anStftForTheContextEncoder.stftForGapOf(self._audio)
-        self._stftForContext = anStftForTheContextEncoder.stftForTheContextOf(self._audio)
+        self._preProcessForGap = aPreProcessor.stftForGapOf(self._audio)
+        self._preProcessForContext = aPreProcessor.stftForTheContextOf(self._audio)
         super().__init__(architecture, name)
         self._SNR = tf.reduce_mean(self._pavlovs_SNR(self._architecture.output(), self._architecture.target()))
 
@@ -23,7 +23,7 @@ class ContextEncoderSystem(DNNSystem):
             return tf.train.AdamOptimizer(learning_rate=learningRate).minimize(self._architecture.loss())
 
     def _feedDict(self, data, sess, isTraining=True):
-        net_input, net_target = sess.run([self._stftForContext, self._stftForGap], feed_dict={self._audio: data})
+        net_input, net_target = sess.run([self._preProcessForContext, self._preProcessForGap], feed_dict={self._audio: data})
         return {self._architecture.input(): net_input, self._architecture.target(): net_target,
                 self._architecture.isTraining(): isTraining}
 
