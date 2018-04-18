@@ -28,6 +28,7 @@ class DNNSystem(object):
         with tf.Session() as sess:
             trainReader = self._loadReader(trainTFRecordPath)
             validReader = self._loadReader(validTFRecordPath)
+            optimizer = self.optimizer(learningRate)
 
             saver = tf.train.Saver(max_to_keep=100)
             path = self.modelsPath(restoreNum)
@@ -47,7 +48,6 @@ class DNNSystem(object):
             writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
             summariesDict = self._evaluationSummaries()
-            optimizer = self.optimizer(learningRate)
 
             try:
                 trainReader.start()
