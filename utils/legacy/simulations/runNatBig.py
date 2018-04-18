@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 from network.emptyTFGraph import EmptyTfGraph
 
@@ -10,7 +10,7 @@ import socket
 if 'omenx' in socket.gethostname():
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-from network.stftGapContextEncoder import StftGapContextEncoder
+from utils.legacy.stftGapContextEncoder import StftGapContextEncoder
 
 __author__ = 'Andres'
 

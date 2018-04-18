@@ -1,7 +1,31 @@
+"""    
+This network uses an stft representation of the sides of the signal to produce audio as an output.
+The frame length was set to 512 and the frame step to 64, although it should be 128.
+There are three convolutions and three deconvolutions.
+
+This small network was trained for 1141999 steps. It appears to still be learning.
+The best values on the validation were found at step 1133999:
+
+	    SNRs 1133999	reconstruction_loss 1133999
+count	65536	        65536
+mean	10.638316068	7.60381269454956
+std	    7.0298398286	19.9564838409424
+min	    -27.67805389	0.011582373641431
+25%	    4.3873017658	0.263745993375778
+50%	    11.126480919	1.37784320116043
+75%	    16.480553727	5.75252687931061
+max	    30.251670154	1465.634765625
+
+
+"""
+
+
+
+
 import tensorflow as tf
 
-from network.contextEncoder import ContextEncoderNetwork
 from network.emptyTFGraph import EmptyTfGraph
+from utils.legacy.contextEncoder import ContextEncoderNetwork
 
 __author__ = 'Andres'
 
@@ -41,31 +65,32 @@ with tf.name_scope('Energy_Spectogram'):
     aModel.setOutputTo(stacked)
 
 with tf.variable_scope("Encoder"):
-    filter_widths = [(7, 89), (4, 23), (2, 11), (2, 3), (1, 3)]
-    input_channels = [2, 32, 32, 128, 128]
-    output_channels = [32, 32, 128, 128, 200]
-    strides = [[1, 2, 2, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 2, 2, 1], [1, 1, 1, 1]]
-    names = ['First_Conv', 'Second_Conv', 'Third_Conv', 'Fourth_Conv', 'Fifth_Conv']
+    filter_widths = [(9, 33), (5, 9), (3, 3)]
+    input_channels = [2, 32, 64]
+    output_channels = [32, 64, 128]
+    strides = [[1, 2, 4, 1], [1, 2, 4, 1], [1, 2, 4, 1]]
+    names = ['First_Conv', 'Second_Conv', 'Third_Conv']
     aModel.addSeveralConvLayers(filter_shapes=filter_widths, input_channels=input_channels,
                                 output_channels=output_channels, strides=strides, names=names)
 
-aModel.addReshape((batch_size, 3200))
-aModel.addFullyConnectedLayer(3200, 2048, 'Fully')
+aModel.addReshape((batch_size, 2560))
+aModel.addFullyConnectedLayer(2560, 2048, 'Fully')
 aModel.addRelu()
 aModel.addReshape((batch_size, 1, 32, 64))
 
 with tf.variable_scope("Decoder"):
-    filter_widths = [(1, 11), (1, 3), (1, 3), (1, 11), (1, 97)]
-    input_channels = [64, 128, 256, 128, 64]
-    output_channels = [128, 256, 128, 64, 16]
-    strides = [[1, 1, 2, 1]] * len(input_channels)
-    names = ['First_Deconv', 'Second_Deconv', 'Third_Deconv', 'Fourth_Deconv', 'Fifth_Deconv']
+    filter_widths = [(1, 17), (1, 65)]
+    input_channels = [64, 64]
+    output_channels = [64, 16]
+    strides = [[1, 1, 4, 1]] * len(input_channels)
+    names = ['First_Deconv', 'Second_Deconv']
     aModel.addSeveralDeconvLayers(filter_shapes=filter_widths, input_channels=input_channels,
                                   output_channels=output_channels, strides=strides, names=names)
-    aModel.addDeconvLayerWithoutNonLin(filter_shape=(1, 1024), input_channels=16, output_channels=1,
-                                       stride=(1, 1, 1, 1), name="Last_Deconv")
+    aModel.addDeconvLayerWithoutNonLin(filter_shape=(1, 129), input_channels=16, output_channels=1,
+                                       stride=(1, 1, 2, 1), name="Last_Deconv")
     aModel.addReshape((batch_size, gap_length))
 
+print(aModel.description())
 aContextEncoderNetwork = ContextEncoderNetwork(model=aModel, batch_size=batch_size, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-5, name='nat_full_stft_8_')
+                                               gap_length=gap_length, learning_rate=1e-5, name='nat_full_stft_2')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)

@@ -1,14 +1,12 @@
-import numpy as np
-import tensorflow as tf
 import re
 
-from tensorflow.python.client import timeline
+import numpy as np
+import tensorflow as tf
 
-from utils.evaluationWriter import EvaluationWriter
-from utils.plotSummary import PlotSummary
+from utils.legacy.evaluationWriter import EvaluationWriter
+from utils.legacy.plotSummary import PlotSummary
 from utils.strechableNumpyArray import StrechableNumpyArray
 from utils.tfReader import TFReader
-from utils.timeLiner import TimeLiner
 
 __author__ = 'Andres'
 

@@ -3,8 +3,8 @@ import functools
 import tensorflow as tf
 from tensorflow.contrib.signal.python.ops import window_ops
 
-from network.contextEncoder import ContextEncoderNetwork
 from network.emptyTFGraph import EmptyTfGraph
+from utils.legacy.contextEncoder import ContextEncoderNetwork
 
 __author__ = 'Andres'
 

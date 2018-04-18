@@ -1,17 +1,8 @@
-import sys
-import os
-
-from network.emptyTFGraph import EmptyTfGraph
-from network.stftPhaseContextEncoder import StftPhaseContextEncoder
-from utils.stftForTheInpaintingSetting import StftForTheInpaintingSetting
-
-sys.path.insert(0, '../')
 import tensorflow as tf
 from tensorflow.contrib import slim
-import socket
-if 'omenx' in socket.gethostname():
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
+from network.emptyTFGraph import EmptyTfGraph
+from utils.legacy.stftMagContextEncoder import StftTestContextEncoder
 
 __author__ = 'Andres'
 
@@ -19,30 +10,27 @@ tf.reset_default_graph()
 train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 
-signal_length = 5120
+window_size = 5120
 gap_length = 1024
 batch_size = 256
 
-fft_window_length = 512
-fft_hop_size = 128
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
-aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
-anStftForTheInpaintingSetting = StftForTheInpaintingSetting(signal_length=signal_length,
-                                                                    gap_length=gap_length,
-                                                                    fft_window_length=fft_window_length,
-                                                                    fft_hop_size=fft_hop_size)
-anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
-aTargetModel.divideComplexOutputIntoMagAndPhase()  # (256, 11, 257, 2)
+signal = aModel.output()
 
-aModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="context encoder")
+with tf.name_scope('Energy_Spectogram'):
+    fft_frame_length = 512
+    fft_frame_step = 128
+    stft = tf.contrib.signal.stft(signals=signal, frame_length=fft_frame_length, frame_step=fft_frame_step)
 
-anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
-aModel.divideComplexOutputIntoMagAndPhase()
-aModel.addReshape((batch_size, 16, 257, 4))
+    sides_stft = tf.stack((stft[:, :15, :], stft[:, 15+7:, :]), axis=3)
+
+    mag_stft = tf.abs(sides_stft)    # (256, 15, 257, 2)
+    aModel.setOutputTo(mag_stft)
 
 with tf.variable_scope("Encoder"):
     filter_shapes = [(7, 89), (3, 17), (2, 6), (1, 5), (1, 3)]
-    input_channels = [4, 32, 64, 128, 128]
+    input_channels = [2, 32, 64, 128, 128]
     output_channels = [32, 64, 128, 128, 200]
     strides = [[1, 2, 2, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 1, 2, 1], [1, 1, 1, 1]]
     names = ['First_Conv', 'Second_Conv', 'Third_Conv', 'Fourth_Conv', 'Fifth_Conv']
@@ -52,7 +40,6 @@ with tf.variable_scope("Encoder"):
 aModel.addReshape((batch_size, 3200))
 aModel.addFullyConnectedLayer(3200, 2048, 'Fully')
 aModel.addRelu()
-aModel.addBatchNormalization()
 aModel.addReshape((batch_size, 8, 8, 32))
 
 with tf.variable_scope("Decoder"):
@@ -65,20 +52,20 @@ with tf.variable_scope("Decoder"):
                                   output_channels=output_channels, strides=strides, names=names)
 
     aModel.addReshape((batch_size, 8, 257, 128))
-    aModel.addDeconvLayer(filter_shape=(3, 33), input_channels=128, output_channels=11, stride=(1, 2, 2, 1),
+    aModel.addDeconvLayer(filter_shape=(3, 33), input_channels=128, output_channels=7, stride=(1, 2, 2, 1),
                           name='Third_deconv')
-    aModel.addBatchNormalization()
 
-    aModel.addReshape((batch_size, 11, 257, 32))
+    aModel.addReshape((batch_size, 7, 257, 32))
 
     aModel.addDeconvLayerWithoutNonLin(filter_shape=(5, 89), input_channels=32, output_channels=1,
                                        stride=(1, 1, 1, 1), name="Last_Deconv")
+    aModel.addReshape((batch_size, 7, 257))
 
 print(aModel.description())
 
 model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
-aContextEncoderNetwork = StftPhaseContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=signal_length,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_mag_phase_times_mag_gap_')
+aContextEncoderNetwork = StftTestContextEncoder(model=aModel, batch_size=batch_size, stft=stft, window_size=window_size,
+                                               gap_length=gap_length, learning_rate=1e-4, name='nat_mag_stft_5_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)

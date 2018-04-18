@@ -1,11 +1,10 @@
-import tensorflow as tf
 import re
+
 import numpy as np
-from network.contextEncoder import ContextEncoderNetwork
-from utils.evaluationWriter import EvaluationWriter
-from utils.plotSummary import PlotSummary
+import tensorflow as tf
+
+from utils.legacy.contextEncoder import ContextEncoderNetwork
 from utils.strechableNumpyArray import StrechableNumpyArray
-from utils.tfReader import TFReader
 
 __author__ = 'Andres'
 

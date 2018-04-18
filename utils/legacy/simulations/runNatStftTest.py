@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from network.emptyTFGraph import EmptyTfGraph
-from network.stftMagContextEncoder import StftTestContextEncoder
+from utils.legacy.stftMagContextEncoder import StftTestContextEncoder
 
 __author__ = 'Andres'
 

@@ -1,8 +1,17 @@
-import tensorflow as tf
-from tensorflow.contrib import slim
+import os
+import sys
 
 from network.emptyTFGraph import EmptyTfGraph
-from network.stftGapContextEncoder import StftGapContextEncoder
+from utils.legacy.stftPhaseContextEncoder import StftPhaseContextEncoder
+from utils.stftForTheContextEncoder import StftForTheContextEncoder
+
+sys.path.insert(0, '../')
+import tensorflow as tf
+from tensorflow.contrib import slim
+import socket
+if 'omenx' in socket.gethostname():
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 
 __author__ = 'Andres'
 
@@ -10,41 +19,25 @@ tf.reset_default_graph()
 train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 
-window_size = 5120
+signal_length = 5120
 gap_length = 1024
 batch_size = 256
 
-fft_frame_length = 512
-fft_frame_step = 128
+fft_window_length = 512
+fft_hop_size = 128
 
-aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="Target Model")
+aTargetModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="Target Model")
+anStftForTheInpaintingSetting = StftForTheContextEncoder(signalLength=signal_length,
+                                                         gapLength=gap_length,
+                                                         fftWindowLength=fft_window_length,
+                                                         fftHopSize=fft_hop_size)
+anStftForTheInpaintingSetting.addStftForGapTo(aTargetModel)
+aTargetModel.divideComplexOutputIntoMagAndPhase()  # (256, 11, 257, 2)
 
-with tf.name_scope('Remove_unnecesary_sides_before_stft'):
-    signal = aTargetModel.output()
-    signal_without_unnecesary_sides = signal[:, 1664:3456]
-    aTargetModel.setOutputTo(signal_without_unnecesary_sides)
-aTargetModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
-aTargetModel.addAbs()  # (256, 11, 257)
+aModel = EmptyTfGraph(shapeOfInput=(batch_size, signal_length), name="context encoder")
 
-aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
-
-with tf.name_scope('Remove_gap_before_stft'):
-    signal = aModel.output()
-    left_side = signal[:, :2048]
-    right_side = signal[:, 2048+1024:]
-    
-    # This is strange. The window is 5K samples long, the hole 1024 and the 0 pading 384.
-    # Unless signal in in spectrogram. In that case, the code is not very clear. Maybe consider adding comments.
-    left_side_padded = tf.concat((left_side, tf.zeros((batch_size, 384))), axis=1)
-    right_side_padded = tf.concat((tf.zeros((batch_size, 384)), right_side), axis=1)
-
-    # If you pad them with 0, maybe you also stack them allong axis 2 (one after the other.)
-    signal_without_gap = tf.stack((left_side_padded, right_side_padded), axis=1)  # (256, 2, 2432)
-    aModel.setOutputTo(signal_without_gap)
-
-aModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)  # (256, 2, 16, 257)
-aModel.addReshape((batch_size, 32, 257))
-aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 32, 257, 2)
+anStftForTheInpaintingSetting.addStftForTheContextTo(aModel)
+aModel.divideComplexOutputIntoMagAndPhase()
 aModel.addReshape((batch_size, 16, 257, 4))
 
 with tf.variable_scope("Encoder"):
@@ -86,6 +79,6 @@ print(aModel.description())
 model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
-aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_mag_1_')
+aContextEncoderNetwork = StftPhaseContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=signal_length,
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_mag_phase_times_mag_gap_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)

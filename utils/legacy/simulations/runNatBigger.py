@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from network.contextEncoder import ContextEncoderNetwork
 from network.emptyTFGraph import EmptyTfGraph
+from utils.legacy.contextEncoder import ContextEncoderNetwork
 
 __author__ = 'Andres'
 

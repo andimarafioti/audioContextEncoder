@@ -1,26 +1,14 @@
-import sys
-import os
-
-from network.emptyTFGraph import EmptyTfGraph
-
-sys.path.insert(0, '../')
 import tensorflow as tf
 from tensorflow.contrib import slim
-import socket
-if 'omenx' in socket.gethostname():
-    os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
-from network.stftGapContextEncoder import StftGapContextEncoder
+from network.emptyTFGraph import EmptyTfGraph
+from utils.legacy.stftGapContextEncoder import StftGapContextEncoder
 
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-if 'omenx' in socket.gethostname():
-    train_filename = '/store/nati/datasets/Nsynth/train_w5120_g1024_h512.tfrecords'
-    valid_filename = '/store/nati/datasets/Nsynth/valid_w5120_g1024_h512.tfrecords'
-else:
-    train_filename = '/scratch/snx3000/nperraud/data/NSynth/train_w5120_g1024_h512.tfrecords'
-    valid_filename = '/scratch/snx3000/nperraud/data/NSynth/valid_w5120_g1024_h512.tfrecords'    
+train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
+valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
 
 window_size = 5120
 gap_length = 1024
@@ -36,7 +24,7 @@ with tf.name_scope('Remove_unnecesary_sides_before_stft'):
     signal_without_unnecesary_sides = signal[:, 1664:3456]
     aTargetModel.setOutputTo(signal_without_unnecesary_sides)
 aTargetModel.addSTFT(frame_length=fft_frame_length, frame_step=fft_frame_step)
-aTargetModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 11, 257, 2)
+aTargetModel.addAbs()  # (256, 11, 257)
 
 aModel = EmptyTfGraph(shapeOfInput=(batch_size, window_size), name="context encoder")
 
@@ -90,7 +78,7 @@ with tf.variable_scope("Decoder"):
 
     aModel.addReshape((batch_size, 11, 257, 32))
 
-    aModel.addDeconvLayerWithoutNonLin(filter_shape=(5, 89), input_channels=32, output_channels=2,
+    aModel.addDeconvLayerWithoutNonLin(filter_shape=(5, 89), input_channels=32, output_channels=1,
                                        stride=(1, 1, 1, 1), name="Last_Deconv")
 
 print(aModel.description())
@@ -99,5 +87,5 @@ model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_1_')
-aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6, restore_num=None)
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_mag_1_')
+aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)

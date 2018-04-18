@@ -1,19 +1,24 @@
-"""
-This trained for 85k steps (24hs) with a learning rate of 1e-3 and didn't learn anything.
 
-"""
-
-import tensorflow as tf
-from tensorflow.contrib import slim
+import os
+import sys
 
 from network.emptyTFGraph import EmptyTfGraph
-from network.stftGapContextEncoder import StftGapContextEncoder
+
+sys.path.insert(0, '../')
+import tensorflow as tf
+from tensorflow.contrib import slim
+import socket
+if 'omenx' in socket.gethostname():
+    os.environ["CUDA_VISIBLE_DEVICES"]="1"
+
+
+from utils.legacy.stftGapContextEncoder import StftGapContextEncoder
 
 __author__ = 'Andres'
 
 tf.reset_default_graph()
-train_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
-valid_filename = '../test_w5120_g1024_h512_ex63501.tfrecords'
+train_filename = '/scratch/fma_small_train_w5120_g1024_h512.tfrecords'
+valid_filename = '/scratch/fma_small_valid_w5120_g1024_h512.tfrecords'
 
 window_size = 5120
 gap_length = 1024
@@ -53,38 +58,38 @@ aModel.divideComplexOutputIntoRealAndImaginaryParts()  # (256, 32, 257, 2)
 aModel.addReshape((batch_size, 16, 257, 4))
 
 with tf.variable_scope("Encoder"):
-    filter_shapes = [(7, 89), (3, 17), (2, 9), (1, 5), (2, 5), (2, 5)]
-    input_channels = [4, 32, 128, 512, 256, 128]
-    output_channels = [32, 128, 512, 256, 128, 256]
-    strides = [[1, 2, 2, 1], [1, 2, 2, 1], [1, 2, 2, 1], [1, 1, 2, 1], [1, 1, 2, 1], [1, 1, 2, 1]]
+    filter_shapes = [(7, 89), (3, 17), (2, 11), (1, 9), (1, 5), (2, 5)]
+    input_channels = [4, 32, 128, 512, 256, 160]
+    output_channels = [32, 128, 512, 256, 160, 128]
+    strides = [[1, 2, 2, 1], [1, 2, 3, 1], [1, 2, 3, 1], [1, 1, 2, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
     names = ['First_Conv', 'Second_Conv', 'Third_Conv', 'Fourth_Conv', 'Fifth_Conv', 'Sixth_Conv']
     aModel.addSeveralConvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
                                 output_channels=output_channels, strides=strides, names=names)
 
-aModel.addReshape((batch_size, 2560))
-aModel.addFullyConnectedLayer(2560, 2048, 'Fully')
+aModel.addReshape((batch_size, 2048))
+aModel.addFullyConnectedLayer(2048, 2048, 'Fully')
 aModel.addRelu()
 aModel.addBatchNormalization()
 aModel.addReshape((batch_size, 8, 8, 32))
 
 with tf.variable_scope("Decoder"):
-    filter_shapes = [(5, 5), (3, 3), (3, 3), (11, 11)]
-    input_channels = [32, 128, 512, 128]
-    output_channels = [128, 512, 128, 32]
-    strides = [[1, 2, 2, 1]] * len(input_channels)
-    names = ['First_Deconv', 'Second_Deconv', 'Third_Deconv', 'Fourth_Deconv']
+    filter_shapes = [(8, 8), (5, 5), (3, 3)]
+    input_channels = [32, 128, 512]
+    output_channels = [128, 512, 257]
+    strides = [[1, 2, 2, 1], [1, 2, 2, 1], [1, 1, 1, 1]]
+    names = ['First_Deconv', 'Second_Deconv', 'Third_Deconv']
     aModel.addSeveralDeconvLayers(filter_shapes=filter_shapes, input_channels=input_channels,
                                   output_channels=output_channels, strides=strides, names=names)
-    aModel.addDeconvLayerWithoutNonLin(filter_shape=(13, 13), input_channels=32, output_channels=2,
-                                       stride=(1, 1, 1, 1), name="Last_Deconv")
 
-    aModel.addReshape((batch_size, 128, 2, 128))
-    aModel.addConvLayer(filter_shape=(1, 1), input_channels=128, output_channels=11, stride=(1, 1, 1, 1),
-                        name='first_1by1')
-    aModel.addReshape((batch_size, 11, 2, 128))
-    aModel.addConvLayer(filter_shape=(1, 1), input_channels=128, output_channels=257, stride=(1, 1, 1, 1),
-                        name='second_1by1')
-    aModel.addReshape((batch_size, 11, 257, 2))
+    aModel.addReshape((batch_size, 8, 257, 128))
+    aModel.addDeconvLayer(filter_shape=(5, 67), input_channels=128, output_channels=11, stride=(1, 2, 2, 1),
+                          name='Fourth_deconv')
+    aModel.addBatchNormalization()
+
+    aModel.addReshape((batch_size, 11, 257, 32))
+
+    aModel.addDeconvLayerWithoutNonLin(filter_shape=(11, 257), input_channels=32, output_channels=2,
+                                       stride=(1, 1, 1, 1), name="Last_Deconv")
 
 print(aModel.description())
 
@@ -92,5 +97,5 @@ model_vars = tf.trainable_variables()
 slim.model_analyzer.analyze_vars(model_vars, print_info=True)
 
 aContextEncoderNetwork = StftGapContextEncoder(model=aModel, batch_size=batch_size, target_model=aTargetModel, window_size=window_size,
-                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_1to1_1_')
+                                               gap_length=gap_length, learning_rate=1e-3, name='nat_stft_gap_big_1_')
 aContextEncoderNetwork.train(train_filename, valid_filename, num_steps=1e6)
