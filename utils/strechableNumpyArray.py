@@ -3,7 +3,9 @@ import numpy as np
 __author__ = 'Andres'
 
 
-class StrechableNumpyArray:
+class StrechableNumpyArray(object):
+    """When trying to add values to a numpy array, things can get slow if the array is too large.
+    This class tries to solve that by updating the size of the array incrementally"""
     def __init__(self, dtype=np.float32):
         self._dtype = dtype
         self.data = np.zeros((1000000,), dtype=self._dtype)
