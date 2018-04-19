@@ -8,7 +8,7 @@ from datasetGenerator.fmaTFRecordGenerator import FMATFRecordGenerator
 __author__ = 'Andres'
 
 try:  # Test the backend for mp3 files
-    librosa.load("test/098569.mp3")
+    librosa.load("utils/test/098569.mp3")
 except NoBackendError as e:
     raise e
 
