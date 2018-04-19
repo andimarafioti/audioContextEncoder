@@ -1,10 +1,12 @@
 import pickle
 
-from architecture.contextEncoderArchitecture import ContextEncoderArchitecture
+__author__ = 'Andres'
+
 from architecture.convNetworkParams import ConvNetworkParams
 from architecture.fullyLayerParams import FullyLayerParams
-from system.contextEncoderSystem import ContextEncoderSystem
-from system.preAndPostProcessor import PreAndPostProcessor
+
+"Simple script to save parameters"
+
 
 batchSize = 256
 signalLength = 5120
@@ -29,19 +31,12 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
                                   name='Decoder')
 
 inputShape = (batchSize, 16, 257, 4)
-aContextEncoderArchitecture = ContextEncoderArchitecture(inputShape, encoderParams, decoderParams, fullyParams)
-aPreProcessor = PreAndPostProcessor(signalLength=signalLength, gapLength=gapLength,
-                                    fftWindowLength=fftWindowLength, fftHopSize=fftHopSize)
-
 name = "Context_Encoder"
-aContextEncoderSystem = ContextEncoderSystem(aContextEncoderArchitecture, batchSize, aPreProcessor, name)
 
 dictToSave = {"Architecture Params": [inputShape, encoderParams, decoderParams, fullyParams],
               "PreProcessor Params": [signalLength, gapLength, fftWindowLength, fftHopSize],
               "modelName": name,
               "batchSize": batchSize}
 
-with open(name + '_parameters.pkl', 'wb') as saveFile:
-    pickle.dump(dictToSave, saveFile)
-
-aContextEncoderSystem.train("nsynth_train_w5120_g1024_h512.tfrecords", "nsynth_valid_w5120_g1024_h512.tfrecords", 1e-3)
+with open(name + '_parameters.pkl', 'wb') as fiModel:
+    pickle.dump(dictToSave, fiModel)
