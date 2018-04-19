@@ -74,7 +74,8 @@ class TestStftForTheContextEncoder(TestCase):
         framesOnGap = (((self.gap_length + self.anStftForTheInpaintingSetting.padding()*2)-self.fft_window_length)/
                        self.fft_hop_size)+1
         binsPerFrame = self.fft_window_length//2+1
-        self.assertEquals(aStft.shape.as_list(), [32, framesOnGap, binsPerFrame])
+        realAndImagChannels = 2
+        self.assertEquals(aStft.shape.as_list(), [32, framesOnGap, binsPerFrame, realAndImagChannels])
 
     def test05TheStftRemovesTheGapCorrectly(self):
         fake_batch_of_signal = np.array([np.arange(self.signal_length)])
@@ -119,8 +120,11 @@ class TestStftForTheContextEncoder(TestCase):
         framesOnSides = ((side_length + self.anStftForTheInpaintingSetting.padding() - self.fft_window_length)
                          / self.fft_hop_size)+1
         binsPerFrame = self.fft_window_length//2+1
+        realAndImagChannels = 2
+        beforeAndAfterChannels = 2
 
-        self.assertEquals(aStft.shape.as_list(), [32, 2, framesOnSides, binsPerFrame])
+        self.assertEquals(aStft.shape.as_list(), [32, framesOnSides, binsPerFrame,
+                                                  realAndImagChannels*beforeAndAfterChannels])
 
     def test08TheStftProducesTheCorrectShapeWhenDoingTheInverseStftOnTheGap(self):
         batch_size = 32
