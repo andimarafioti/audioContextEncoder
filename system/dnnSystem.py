@@ -43,7 +43,7 @@ class DNNSystem(object):
                 sess.run([tf.local_variables_initializer()])
                 print("Model restored.")
 
-            logs_path = '../logdir/' + self._name  # write each run to a diff folder.
+            logs_path = 'utils/logdir/' + self._name  # write each run to a diff folder.
             print("logs path:", logs_path)
             writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
@@ -81,7 +81,7 @@ class DNNSystem(object):
             print("Last saved model:", self.modelsPath(_modelNum + step))
 
     def modelsPath(self, models_number=None):
-        pathdir = "../saved_models/" + self._name
+        pathdir = "utils/saved_models/" + self._name
         if models_number is None:
             ckpt = tf.train.get_checkpoint_state(pathdir)
             print(ckpt)

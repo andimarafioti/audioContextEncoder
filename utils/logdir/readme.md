@@ -1,0 +1,1 @@
+This folder contains the logs that are saved in the project
