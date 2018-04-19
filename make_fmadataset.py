@@ -1,9 +1,16 @@
+import librosa
+from audioread import NoBackendError
+
 from datasetGenerator.exampleProcessor import ExampleProcessor
 from datasetGenerator.fmaDownloader import FMADownloader
 from datasetGenerator.fmaTFRecordGenerator import FMATFRecordGenerator
 
 __author__ = 'Andres'
 
+try:  # Test the backend for mp3 files
+    librosa.load("utils/098569.mp3")
+except NoBackendError as e:
+    raise e
 
 downloader = FMADownloader()
 downloader.downloadAndExtract()
