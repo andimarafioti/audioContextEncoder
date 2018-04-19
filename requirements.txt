@@ -1,0 +1,6 @@
+tensorflow_gpu==1.4.0
+librosa==0.5.1
+audioread==2.1.5
+matplotlib==2.1.0
+numpy==1.14.1
+
