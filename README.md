@@ -4,7 +4,7 @@ This project accompanies the research work on audio inpainting of small gaps don
 
 # Installation
 
-Install the requirements with `pip install -r requirements.txt`. For windows users, numpy should probably be numpy+mkl. For the FMA dataset, librosa requires ffmpeg as an mp3 backend. 
+Install the requirements with `pip install -r requirements.txt`. For windows users, the numpy version should be 1.14.0+mkl (find it [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/)). For the FMA dataset, librosa requires ffmpeg as an mp3 backend. 
 
 # Instructions
 The paper uses both google's Nsynth dataset and the FMA dataset. In order to recreate the used dataset, execute in the parent folder either `python make_nsynthdataset.py` or  `python make_fmadataset.py`. The output of the scripts are three `tfrecord` files for training, validating and testing the model.
