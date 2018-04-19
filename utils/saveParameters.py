@@ -7,6 +7,7 @@ from architecture.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
+sessionsName = "Papers_Context_Encoder"
 
 batchSize = 256
 signalLength = 5120
@@ -31,12 +32,10 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
                                   name='Decoder')
 
 inputShape = (batchSize, 16, 257, 4)
-name = "Context_Encoder"
 
 dictToSave = {"Architecture Params": [inputShape, encoderParams, decoderParams, fullyParams],
               "PreProcessor Params": [signalLength, gapLength, fftWindowLength, fftHopSize],
-              "modelName": name,
               "batchSize": batchSize}
 
-with open(name + '_parameters.pkl', 'wb') as fiModel:
+with open('../' + sessionsName + '_parameters.pkl', 'wb') as fiModel:
     pickle.dump(dictToSave, fiModel)
