@@ -2,8 +2,8 @@ import pickle
 
 __author__ = 'Andres'
 
-from architecture.convNetworkParams import ConvNetworkParams
-from architecture.fullyLayerParams import FullyLayerParams
+from architecture.parameters.convNetworkParams import ConvNetworkParams
+from architecture.parameters.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
