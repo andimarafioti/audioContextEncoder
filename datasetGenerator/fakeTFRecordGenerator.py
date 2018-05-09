@@ -38,7 +38,7 @@ class FakeTFRecordGenerator(TFRecordGenerator):
 
                         count, total = self._notifyIfNeeded(count + 1, total)
                         sys.stdout.flush()
-            writer.close()
+        writer.close()
         end = time.time() - start
 
         print("there were: ", total + count)
