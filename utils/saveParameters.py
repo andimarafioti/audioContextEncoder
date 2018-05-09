@@ -1,5 +1,8 @@
 import pickle
 
+import sys
+sys.path.append('.')  # In case we launch this from the base folder
+
 __author__ = 'Andres'
 
 from architecture.parameters.convNetworkParams import ConvNetworkParams
