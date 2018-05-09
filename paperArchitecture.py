@@ -4,9 +4,10 @@ from architecture.contextEncoderArchitecture import ContextEncoderArchitecture
 from system.contextEncoderSystem import ContextEncoderSystem
 from system.preAndPostProcessor import PreAndPostProcessor
 
+architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
 sessionsName = "Papers_Context_Encoder"
 
-with open(sessionsName + '_parameters.pkl', 'rb') as savedFile:
+with open(architecturesParametersFile, 'rb') as savedFile:
     Context_Encoder_parameters = pickle.load(savedFile)
 
 aContextEncoderArchitecture = ContextEncoderArchitecture(*Context_Encoder_parameters['Architecture Params'])

@@ -7,7 +7,7 @@ from architecture.parameters.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
-sessionsName = "Papers_Context_Encoder"
+architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
 
 batchSize = 256
 signalLength = 5120
@@ -37,5 +37,5 @@ dictToSave = {"Architecture Params": [inputShape, encoderParams, decoderParams, 
               "PreProcessor Params": [signalLength, gapLength, fftWindowLength, fftHopSize],
               "batchSize": batchSize}
 
-with open('../' + sessionsName + '_parameters.pkl', 'wb') as fiModel:
+with open('../' + architecturesParametersFile, 'wb') as fiModel:
     pickle.dump(dictToSave, fiModel)
