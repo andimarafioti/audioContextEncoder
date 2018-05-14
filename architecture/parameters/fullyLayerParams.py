@@ -5,7 +5,6 @@ __author__ = 'Andres'
 
 class FullyLayerParams(object):
     def __init__(self, inputShape, outputShape, name):
-        assert np.prod(inputShape) == np.prod(outputShape), 'Input and Output shape must be equal'
         assert inputShape[0] == outputShape[0], 'Batch size is expected to be the first element in the shapes'
 
         self._inputShape = inputShape
