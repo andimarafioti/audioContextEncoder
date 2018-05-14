@@ -40,5 +40,5 @@ dictToSave = {"Architecture Params": [inputShape, encoderParams, decoderParams, 
               "PreProcessor Params": [signalLength, gapLength, fftWindowLength, fftHopSize],
               "batchSize": batchSize}
 
-with open('../' + architecturesParametersFile, 'wb') as fiModel:
+with open(architecturesParametersFile, 'wb') as fiModel:
     pickle.dump(dictToSave, fiModel)
