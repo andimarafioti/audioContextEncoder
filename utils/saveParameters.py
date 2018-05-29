@@ -37,8 +37,6 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
                                            [1, 2, 2, 1], [1, 1, 1, 1]],
                                   name='Decoder')
 
-inputShape = (batchSize, 16, 257, 4)
-
 contextEncoderParameters = ContextEncoderParameters(batchSize, signalLength, gapLength, fftWindowLength, fftHopSize,
                                                     encoderParams, fullyParams, decoderParams)
 
