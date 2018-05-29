@@ -13,7 +13,7 @@ from architecture.parameters.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
-architecturesParametersFile = "Papers_Context_Encoder_test_parameters.pkl"
+architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
 
 batchSize = 256
 signalLength = 5120

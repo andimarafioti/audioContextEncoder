@@ -4,7 +4,7 @@ from architecture.contextEncoderArchitecture import ContextEncoderArchitecture
 from system.contextEncoderSystem import ContextEncoderSystem
 from system.preAndPostProcessor import PreAndPostProcessor
 
-architecturesParametersFile = "Papers_Context_Encoder_test_parameters.pkl"
+architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
 sessionsName = "Papers_Context_Encoder"
 
 with open(architecturesParametersFile, 'rb') as savedFile:
