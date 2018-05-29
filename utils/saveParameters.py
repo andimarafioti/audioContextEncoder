@@ -1,6 +1,9 @@
 import pickle
 
 import sys
+
+from architecture.parameters.contextEncoderParameters import ContextEncoderParameters
+
 sys.path.append('.')  # In case we launch this from the base folder
 
 __author__ = 'Andres'
@@ -10,7 +13,7 @@ from architecture.parameters.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
-architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
+architecturesParametersFile = "Papers_Context_Encoder_test_parameters.pkl"
 
 batchSize = 256
 signalLength = 5120
@@ -36,9 +39,8 @@ decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67),
 
 inputShape = (batchSize, 16, 257, 4)
 
-dictToSave = {"Architecture Params": [inputShape, encoderParams, decoderParams, fullyParams],
-              "PreProcessor Params": [signalLength, gapLength, fftWindowLength, fftHopSize],
-              "batchSize": batchSize}
+contextEncoderParameters = ContextEncoderParameters(batchSize, signalLength, gapLength, fftWindowLength, fftHopSize,
+                                                    encoderParams, fullyParams, decoderParams)
 
 with open(architecturesParametersFile, 'wb') as fiModel:
-    pickle.dump(dictToSave, fiModel)
+    pickle.dump(contextEncoderParameters, fiModel)
