@@ -106,7 +106,7 @@ class TestStftForTheContextEncoder(TestCase):
             produced_signal = sess.run(produced_signal)
 
         left_side_padded = np.concatenate((left_side, np.zeros((1, self.fft_window_length-self.fft_hop_size))), axis=1)
-        right_side_padded = np.concatenate((right_side, np.zeros((1, self.fft_window_length-self.fft_hop_size))), axis=1)
+        right_side_padded = np.concatenate((np.zeros((1, self.fft_window_length-self.fft_hop_size)), right_side), axis=1)
         new_signal = np.stack([left_side_padded, right_side_padded], axis=1)
 
         np.testing.assert_almost_equal(new_signal, produced_signal)

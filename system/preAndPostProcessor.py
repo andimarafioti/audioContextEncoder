@@ -77,7 +77,7 @@ class PreAndPostProcessor(object):
         """batchOfSides should contain the left side on the first dimension and the right side on the second"""
         batchSize = batchOfSides.shape.as_list()[0]
         leftSidePadded = tf.concat((batchOfSides[:, 0], tf.zeros((batchSize, self.padding()))), axis=1)
-        rightSidePadded = tf.concat((batchOfSides[:, 1], tf.zeros((batchSize, self.padding()))), axis=1)
+        rightSidePadded = tf.concat((tf.zeros((batchSize, self.padding())), batchOfSides[:, 1]), axis=1)
         return tf.stack((leftSidePadded, rightSidePadded), axis=1)
 
     def _divideComplexIntoRealAndImag(self, complexTensor):
