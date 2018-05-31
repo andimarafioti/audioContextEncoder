@@ -32,19 +32,23 @@ class PreAndPostProcessor(object):
     def stftForGapOf(self, aBatchOfSignals):
         assert len(aBatchOfSignals.shape) == 2
         signalWithoutExtraSides = self._removeExtraSidesForSTFTOfGap(aBatchOfSignals)
-        stft = tf.contrib.signal.stft(signals=signalWithoutExtraSides,
-                                      frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
-        return self._divideComplexIntoRealAndImag(stft)
+        return self._realAndImagSTFT(signalWithoutExtraSides)
 
     def stftForTheContextOf(self, aBatchOfSignals):
         assert len(aBatchOfSignals.shape) == 2
         leftAndRightSideStacked = self._removeGap(aBatchOfSignals)
         leftAndRightSideStackedAndPadded = self._addPaddingForStftOfContext(leftAndRightSideStacked)
-        stftOfLeftAndRightSideStacked = tf.contrib.signal.stft(signals=leftAndRightSideStackedAndPadded,
+
+        realAndImagSTFTOfLeftSide = self._realAndImagSTFT(leftAndRightSideStackedAndPadded[:, 0])
+        realAndImagSTFTOfRightSide = self._realAndImagSTFT(leftAndRightSideStackedAndPadded[:, 1])
+
+        contextRealAndImagSTFT = tf.concat([realAndImagSTFTOfLeftSide, realAndImagSTFTOfRightSide], axis=-1)
+        return contextRealAndImagSTFT
+
+    def _realAndImagSTFT(self, aBatchOfSignals):
+        stft = tf.contrib.signal.stft(signals=aBatchOfSignals,
                                       frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
-        realAndImagSTFTOfLeftAndRightSideStacked = self._divideComplexIntoRealAndImag(stftOfLeftAndRightSideStacked)
-        shape = realAndImagSTFTOfLeftAndRightSideStacked.get_shape().as_list()
-        return tf.reshape(realAndImagSTFTOfLeftAndRightSideStacked, (shape[0], shape[2], shape[3], shape[1]*shape[4]))
+        return self._divideComplexIntoRealAndImag(stft)
 
     def inverseStftOfGap(self, batchOfStftOfGap):
         window_fn = functools.partial(window_ops.hann_window, periodic=True)
