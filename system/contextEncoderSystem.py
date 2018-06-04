@@ -77,8 +77,9 @@ class ContextEncoderSystem(DNNSystem):
             return [trainSNRSummaryToWrite]
         feed_dict = self._feedDict(audio, sess, False)
         validSNRSummary = sess.run(summariesDict['valid_SNR_summary'], feed_dict)
+        iamgeSummary = sess.run(summariesDict['image_summaries'], feed_dict)
 
-        return [trainSNRSummaryToWrite, validSNRSummary]
+        return [trainSNRSummaryToWrite, validSNRSummary, iamgeSummary]
 
     def _loadReader(self, dataPath):
         return TFReader(dataPath, self._windowSize, batchSize=self._batchSize, capacity=int(2e5), num_epochs=400)
