@@ -36,13 +36,15 @@ class ContextEncoderSystem(DNNSystem):
             saver.restore(sess, path)
             print("Model restored.")
             sess.run([tf.local_variables_initializer()])
-            reconstructed, out_gaps = self._reconstruct(sess, reader, max_steps)
-            return reconstructed, out_gaps
+            return self._reconstruct(sess, reader, max_steps)
 
     def _reconstruct(self, sess, data_reader, max_steps):
         data_reader.start()
         reconstructed = StrechableNumpyArray()
         out_gaps = StrechableNumpyArray()
+        input_shape = self._architecture.inputShape()
+        contexts = np.empty(input_shape)
+
         for batch_num in range(max_steps):
             try:
                 audio = data_reader.dataOperation(session=sess)
@@ -51,10 +53,12 @@ class ContextEncoderSystem(DNNSystem):
                 break
 
             feed_dict = self._feedDict(audio, sess, False)
-            reconstructed_input, original = sess.run([self._architecture.output(), self._architecture.target()],
+            reconstructed_input, original, context = sess.run([self._architecture.output(), self._architecture.target(),
+                                                      self._architecture.input()],
                                                      feed_dict=feed_dict)
             out_gaps.append(np.reshape(original, (-1)))
             reconstructed.append(np.reshape(reconstructed_input, (-1)))
+            contexts = np.concatenate([contexts, context], axis=0)
 
         output_shape = self._architecture.output().shape.as_list()
         output_shape[0] = -1
@@ -65,7 +69,7 @@ class ContextEncoderSystem(DNNSystem):
 
         data_reader.finish()
 
-        return reconstructed, out_gaps
+        return reconstructed, out_gaps, contexts
 
     def _evaluate(self, summariesDict, feed_dict, validReader, sess):
         trainSNRSummaryToWrite = sess.run(summariesDict['train_SNR_summary'], feed_dict=feed_dict)
