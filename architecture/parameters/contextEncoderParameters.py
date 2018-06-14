@@ -3,11 +3,11 @@ class ContextEncoderParameters(object):
 
     def __init__(self, batchSize, signalLength, gapLength, fftWindowLength, fftHopSize,
                  encoderParameters, fullyConnectedLayerParameters, decoderParameters):
-        self._batchSize = batchSize
-        self._signalLength = signalLength
-        self._gapLength = gapLength
-        self._fftWindowLength = fftWindowLength
-        self._fftHopSize = fftHopSize
+        self._batchSize = int(batchSize)
+        self._signalLength = int(signalLength)
+        self._gapLength = int(gapLength)
+        self._fftWindowLength = int(fftWindowLength)
+        self._fftHopSize = int(fftHopSize)
         self._encoderParameters = encoderParameters
         self._fullyConnectedLayerParameters = fullyConnectedLayerParameters
         self._decoderParameters = decoderParameters
