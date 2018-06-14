@@ -28,10 +28,11 @@ class ContextEncoderParameters(object):
         return self._batchSize
 
     def inputShape(self):
-        return self._batchSize, self._contextFrames(), self._fftFreqBins(), self.INPUT_CHANNELS
+        return self._batchSize, self.contextStftFrameCount(), self._fftFreqBins(), self.INPUT_CHANNELS
+
+    def contextStftFrameCount(self):
+        return int(((self._signalLength - self._gapLength) / 2) / self._fftHopSize)
 
     def _fftFreqBins(self):
         return self._fftWindowLength//2+1
 
-    def _contextFrames(self):
-        return int(((self._signalLength-self._gapLength)/2)/self._fftHopSize)
