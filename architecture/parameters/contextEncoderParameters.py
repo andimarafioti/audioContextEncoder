@@ -18,6 +18,12 @@ class ContextEncoderParameters(object):
     def preProcessorParameters(self):
         return [self._signalLength, self._gapLength, self._fftWindowLength, self._fftHopSize]
 
+    def fftHopSize(self):
+        return self._fftHopSize
+
+    def fftWindowLength(self):
+        return self._fftWindowLength
+
     def batchSize(self):
         return self._batchSize
 
