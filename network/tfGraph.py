@@ -104,6 +104,9 @@ class TFGraph(object):
     def addFullyConnectedLayer(self, input_size, output_size, name):
         self._outputSetter(self._linearLayer(self._output, input_size, output_size, name))
 
+    def addChannelWiseFullyConnectedLayer(self, name):
+        self._outputSetter(self._channelWiseFullyConnectedLayer(self._output, name))
+
     def addDropout(self, rate):
         dropout = tf.layers.dropout(self._output, rate=rate, training=self._isTraining, name='dropout_'+str(rate))
         self._outputSetter(dropout)
@@ -182,6 +185,20 @@ class TFGraph(object):
             weights = self._weight_variable([input_size, output_size])
             linear_function = tf.matmul(input_signal, weights)
             return linear_function
+
+    def _channelWiseFullyConnectedLayer(self, input_signal, name):
+        with tf.variable_scope(name, reuse=False):
+            _, width, height, n_feat_map = input_signal.get_shape().as_list()
+            input_reshape = tf.reshape(input_signal, [-1, width * height, n_feat_map])
+            input_transpose = tf.transpose(input_reshape, [2, 0, 1])
+
+            weights = self._weight_variable([n_feat_map, width * height, width * height])
+            output = tf.matmul(input_transpose, weights)
+
+            output_transpose = tf.transpose(output, [1, 2, 0])
+            output_reshape = tf.reshape(output_transpose, [-1, height, width, n_feat_map])
+
+            return output_reshape
 
     def _weight_variable(self, shape):
         return tf.get_variable('W', shape, initializer=tf.contrib.layers.xavier_initializer())
