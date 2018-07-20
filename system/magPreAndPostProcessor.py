@@ -34,7 +34,7 @@ class MagPreAndPostProcessor(object):
         signalWithoutExtraSides = self._removeExtraSidesForSTFTOfGap(aBatchOfSignals)
         stft = tf.contrib.signal.stft(signals=signalWithoutExtraSides,
                                       frame_length=self._fftWindowLength, frame_step=self._fftHopSize)
-        return tf.abs(stft)
+        return tf.expand_dims(tf.abs(stft), axis=-1)
 
     def stftForTheContextOf(self, aBatchOfSignals):
         assert len(aBatchOfSignals.shape) == 2
