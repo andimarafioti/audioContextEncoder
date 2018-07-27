@@ -4,8 +4,8 @@ from architecture.contextEncoderArchitecture import ContextEncoderArchitecture
 from system.contextEncoderSystem import ContextEncoderSystem
 from system.magPreAndPostProcessor import MagPreAndPostProcessor
 
-architecturesParametersFile = "Papers_Mag_Context_Encoder_parameters.pkl"
-sessionsName = "Papers_Mag_Context_Encoder"
+architecturesParametersFile = "MagVGG16.pkl"
+sessionsName = "Mag_VGG_"
 
 with open(architecturesParametersFile, 'rb') as savedFile:
     Context_Encoder_parameters = pickle.load(savedFile)
