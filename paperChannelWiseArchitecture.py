@@ -4,8 +4,8 @@ from architecture.channelWiseContextEncoderArchitecture import ChannelWiseContex
 from system.contextEncoderSystem import ContextEncoderSystem
 from system.preAndPostProcessor import PreAndPostProcessor
 
-architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
-sessionsName = "Papers_ChannelWiseFC_Context_Encoder"
+architecturesParametersFile = "VGG16.pkl"
+sessionsName = "VGG_ChannelWiseFC_"
 
 with open(architecturesParametersFile, 'rb') as savedFile:
     Context_Encoder_parameters = pickle.load(savedFile)
