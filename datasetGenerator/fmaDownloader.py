@@ -32,11 +32,11 @@ class FMADownloader(Downloader):
         for path, directory_name, file_names in os.walk(self.SMALL_DIR):
             for file_name in file_names:
                 i += 1
-                if i < 7:
+                if i < 8:
                     os.rename(path + '/' + file_name, self.TRAIN_DIR + '/' + file_name)
-                elif i < 9:
+                elif i < 10:
                     os.rename(path + '/' + file_name, self.VALID_DIR + '/' + file_name)
-                elif i == 9:
+                elif i == 10:
                     os.rename(path + '/' + file_name, self.TEST_DIR + '/' + file_name)
                     i = 0
         shutil.rmtree(self.SMALL_DIR)
