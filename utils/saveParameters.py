@@ -13,7 +13,7 @@ from architecture.parameters.fullyLayerParams import FullyLayerParams
 
 "Simple script to save parameters"
 
-architecturesParametersFile = "Papers_Context_Encoder_parameters.pkl"
+architecturesParametersFile = "magnitude_network_parameters.pkl"
 
 batchSize = 256
 signalLength = 5120
@@ -32,7 +32,7 @@ encoderParams = ConvNetworkParams(filterShapes=[(7, 89), (3, 17), (2, 11),
 fullyParams = FullyLayerParams(inputShape=(batchSize, 128, 2, 8), outputShape=(batchSize, 8, 8, 32), name="Fully")
 
 decoderParams = ConvNetworkParams(filterShapes=[(8, 8), (5, 5), (3, 3), (5, 67), (11, 257)],
-                                  channels=[32, 128, 512, 257, 11, 2],
+                                  channels=[32, 128, 512, 257, 11, 1],
                                   strides=[[1, 2, 2, 1], [1, 2, 2, 1], [1, 1, 1, 1],
                                            [1, 2, 2, 1], [1, 1, 1, 1]],
                                   name='Decoder')
