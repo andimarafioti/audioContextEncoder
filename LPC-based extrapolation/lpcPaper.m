@@ -1,5 +1,5 @@
-contextLength = 2176;
-targetLength = 768;
+contextLength = 2048;
+targetLength = 1024;
 contextRatio = ceil(contextLength/targetLength);
 maxLag = 1000;
 
