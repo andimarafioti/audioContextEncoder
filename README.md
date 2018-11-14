@@ -19,15 +19,15 @@ To train the network, execute in the parent folder `python paperArchitecture.py`
 - Samples from the model presented on the paper.
 - Left: Magnitude network, Center: Complex network Right: ground truth
 
-<audio controls="controls" >
-<source src="/audio_examples/good/nsynth_2_rec.wav" autoplay/>
+<audio controls>
+<source src="audio_examples/good/nsynth_2_rec.wav">
 Your browser does not support the audio element.
 </audio>
-<audio controls="controls" >
-<source src="/audioContextEncoder/audio_examples/good/nsynth_2_complex_.wav" autoplay/>
+<audio controls>
+<source src="audio_examples/good/nsynth_2_complex_.wav">
 Your browser does not support the audio element.
 </audio>
-<audio controls="controls" >
-<source src="audio_examples/good/nsynth_2_or.wav" autoplay/>
+<audio controls>
+<source src="audio_examples/good/nsynth_2_or.wav">
 Your browser does not support the audio element.
 </audio>
