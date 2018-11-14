@@ -24,7 +24,7 @@ To train the network, execute in the parent folder `python paperArchitecture.py`
 Your browser does not support the audio element.
 </audio>
 <audio controls>
-<source src="audio_examples/good/nsynth_2_complex_.wav">
+<source src="audio_examples/good/nsynth_2_complex_rec.wav">
 Your browser does not support the audio element.
 </audio>
 <audio controls>
