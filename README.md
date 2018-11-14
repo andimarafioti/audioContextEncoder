@@ -16,18 +16,4 @@ To train the network, execute in the parent folder `python paperArchitecture.py`
 
 ## Sound examples
 
-- Samples from the model presented on the paper.
-- Left: Magnitude network, Center: Complex network Right: ground truth
-
-<audio controls>
-<source src="audio_examples/good/nsynth_2_rec.wav">
-Your browser does not support the audio element.
-</audio>
-<audio controls>
-<source src="audio_examples/good/nsynth_2_complex_rec.wav">
-Your browser does not support the audio element.
-</audio>
-<audio controls>
-<source src="audio_examples/good/nsynth_2_or.wav">
-Your browser does not support the audio element.
-</audio>
+- To hear examples please go to the [accompanying website](https://andimarafioti.github.io/audioContextEncoder/).
