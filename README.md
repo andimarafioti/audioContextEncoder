@@ -13,3 +13,21 @@ The default parameters for the network come pickled in the file `Papers_Context_
 to make other architectures use [saveParameters.py](utils/saveParameters.py).
  
 To train the network, execute in the parent folder `python paperArchitecture.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
+
+## Sound examples
+
+- Samples from the model presented on the paper.
+- Left: Magnitude network, Center: Complex network Right: ground truth
+
+<audio controls="controls" >
+<source src="/audio_examples/good/nsynth_2_rec.wav" autoplay/>
+Your browser does not support the audio element.
+</audio>
+<audio controls="controls" >
+<source src="/audio_examples/good/nsynth_2_complex_.wav" autoplay/>
+Your browser does not support the audio element.
+</audio>
+<audio controls="controls" >
+<source src="/audio_examples/good/nsynth_2_or.wav" autoplay/>
+Your browser does not support the audio element.
+</audio>
