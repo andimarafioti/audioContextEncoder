@@ -24,10 +24,10 @@ To train the network, execute in the parent folder `python paperArchitecture.py`
 Your browser does not support the audio element.
 </audio>
 <audio controls="controls" >
-<source src="/audio_examples/good/nsynth_2_complex_.wav" autoplay/>
+<source src="/audioContextEncoder/audio_examples/good/nsynth_2_complex_.wav" autoplay/>
 Your browser does not support the audio element.
 </audio>
 <audio controls="controls" >
-<source src="/audio_examples/good/nsynth_2_or.wav" autoplay/>
+<source src="audio_examples/good/nsynth_2_or.wav" autoplay/>
 Your browser does not support the audio element.
 </audio>
