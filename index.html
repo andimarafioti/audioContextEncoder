@@ -37,16 +37,34 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <header class="w3-container w3-red w3-center" style="padding:128px 16px">
   <h1 class="w3-margin w3-jumbo">Audio context encoder</h1>
   <p class="w3-xlarge">Samples from the model presented on the paper. <a href="https://github.com/andimarafioti/audioContextEncoder" class="fa fa-github w3-hover-opacity"></a></p>
-
-
 </header>
 
 <!-- First Grid -->
 <div id="G-E" class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Good examples</h1>
+      <h1><img src="images/encoder-signal.jpg" alt="Good spectrogram" width="1000"></h1>
+      <h1><img src="images/decoder-signal.jpg" alt="Good spectrogram" width="1000"></h1>
+
       <h5 class="w3-padding-32">
+        We studied the ability of deep neural networks (DNNs) to restore missing audio content based on its context. We focused on gaps in the range of tens of milliseconds, a condition which has not received much attention yet. The proposed DNN structure was trained on audio signals containing music and musical instruments, separately, with 64-ms long gaps. The input to the DNN was the context, i.e., the signal surrounding the gap, transformed into time-frequency (TF) coefficients. Two networks were analyzed, a DNN with complex-valued TF coefficient output and another one producing magnitude TF coefficient output, both based on the same network architecture. We found significant differences in the inpainting results between the two DNNs. In particular, we discuss the observation that the complex-valued DNN fails to produce reliable results outside the low frequency range. We demonstrated a generally good usability of the proposed DNN structure for generating complex audio signals like music.
+      </h5>
+
+    </div>
+
+
+  </div>
+</div>
+
+<!-- Second Grid -->
+<div id="N-E" class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-third w3-center">
+      <img src="images/good-spectrogram.png" alt="Good spectrogram">
+    </div>
+
+    <div class="w3-twothird">
+      <h1>Good examples</h1>
           <ul><li>Trumpet:
             <ul style="list-style-type:none"><li><audio controls>
                     <source src="audio_examples/good/nsynth_2_rec.wav" type="audio/wav">
@@ -60,46 +78,6 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
                 </li>
                 <li><audio controls>
                     <source src="audio_examples/good/nsynth_2_or.wav" type="audio/wav">
-                    Your browser does not support the audio element.
-                    </audio> Ground truth
-                </li>
-            </ul>
-              </li>
-              <li>Another instrument:</li>
-          </ul>
-      </h5>
-
-    </div>
-
-    <div class="w3-third w3-center">
-      <img src="images/good-spectrogram.png" alt="Good spectrogram">
-    </div>
-
-  </div>
-</div>
-
-<!-- Second Grid -->
-<div id="N-E" class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-third w3-center">
-      <img src="images/good-spectrogram.png" alt="Good spectrogram">
-    </div>
-
-    <div class="w3-twothird">
-      <h1>Noisy examples</h1>
-          <ul><li>Trumpet:
-            <ul style="list-style-type:none"><li><audio controls>
-                    <source src="audio_examples/noisy/nsynth_18_rec.wav" type="audio/wav">
-                    Your browser does not support the audio element.
-                    </audio> Magnitude
-                </li>
-                <li><audio controls>
-                    <source src="audio_examples/noisy/nsynth_18_complex_rec.wav" type="audio/wav">
-                    Your browser does not support the audio element.
-                    </audio> Complex
-                </li>
-                <li><audio controls>
-                    <source src="audio_examples/noisy/nsynth_18_or.wav" type="audio/wav">
                     Your browser does not support the audio element.
                     </audio> Ground truth
                 </li>
@@ -147,6 +125,40 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
   </div>
 </div>
+
+<!-- Fourth Grid -->
+<div id="N-E" class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-third w3-center">
+      <img src="images/good-spectrogram.png" alt="Good spectrogram">
+    </div>
+
+    <div class="w3-twothird">
+      <h1>Noisy examples</h1>
+          <ul><li>Trumpet:
+            <ul style="list-style-type:none"><li><audio controls>
+                    <source src="audio_examples/noisy/nsynth_18_rec.wav" type="audio/wav">
+                    Your browser does not support the audio element.
+                    </audio> Magnitude
+                </li>
+                <li><audio controls>
+                    <source src="audio_examples/noisy/nsynth_18_complex_rec.wav" type="audio/wav">
+                    Your browser does not support the audio element.
+                    </audio> Complex
+                </li>
+                <li><audio controls>
+                    <source src="audio_examples/noisy/nsynth_18_or.wav" type="audio/wav">
+                    Your browser does not support the audio element.
+                    </audio> Ground truth
+                </li>
+            </ul>
+              </li>
+              <li>Another instrument:</li>
+          </ul>
+    </div>
+  </div>
+</div>
+
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Quote of the day: phase life</h1>
