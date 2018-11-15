@@ -1,6 +1,6 @@
 # Audio inpainting with a context encoder
 
-This project accompanies the research work on audio inpainting of small gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center.
+This project accompanies the research work on audio inpainting of small gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. There is a [preprint of the paper](https://arxiv.org/abs/1810.12138) available now: https://arxiv.org/abs/1810.12138.
 
 # Installation
 
