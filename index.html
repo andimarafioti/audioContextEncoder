@@ -72,6 +72,8 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
       <h1>Good examples</h1>
               <h1><img src="images/Nsynth_2.png" alt="Trumpet" width="1000"></h1>
 
+        <h5>On this first example, we find a trumpet signal with a lot of information on high frequencies. Neither of the networks achieve very high SNRms values, nevertheless, it is quite hard to hear any artifacts.</h5>
+
             <ul style="list-style-type:none">
                 <li><audio controls>
                     <source src="audio_examples/good/nsynth_2_or.mp3" type="audio/mpeg">
@@ -90,6 +92,32 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
                     </audio> Right: Complex (4.1 dB SNRms)
                 </li>
             </ul>
+
+         <h1><img src="images/Nsynth_67.png" alt="Trumpet" width="1000"></h1>
+
+         <h5>On this example, we find a synthetic signal with a lot of modulations. Both networks represent this modulations in some way.
+         For the magnitude network, even on very high frequencies the modulations are still inpainted.
+         For the complex network, above 5Khz there is little information.</h5>
+
+            <ul style="list-style-type:none">
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_67_or.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Left: Ground truth
+                </li>
+
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_67_rec.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Center: Magnitude (7.8 dB SNRms)
+                </li>
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_67_complex_rec.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Right: Complex (5.1 dB SNRms)
+                </li>
+            </ul>
+
     </div>
   </div>
 </div>
@@ -99,6 +127,31 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-content">
     <div class="w3-col">
       <h1>Faded examples</h1>
+
+        <h1><img src="images/Nsynth_3.png" alt="Trumpet" width="1000"></h1>
+
+         <h5>On this example, we find a pulsated string signal. Both networks achieve very high SNRms values, but they both present a faded artifact.
+         This is quite easy to hear for the complex network and it is not as present for the magnitude network.</h5>
+
+            <ul style="list-style-type:none">
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_3_or.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Left: Ground truth
+                </li>
+
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_3_rec.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Center: Magnitude (35.2 dB SNRms)
+                </li>
+                <li><audio controls>
+                    <source src="audio_examples/good/nsynth_3_complex_rec.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio> Right: Complex (29.6 dB SNRms)
+                </li>
+            </ul>
+
 
       <h1><img src="images/Nsynth_17.png" alt="Trumpet" width="1000"></h1>
 
