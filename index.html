@@ -41,16 +41,22 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 </header>
 
 <!-- First Grid -->
-<div class="w3-row-padding w3-padding-64 w3-container">
+<div class="w3-row-padding w3-padding-32 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1><img src="images/encoder-signal.jpg" alt="Good spectrogram" width="1000"></h1>
-
       <h5 class="w3-padding-32">
         We studied the ability of deep neural networks (DNNs) to restore missing audio content based on its context. We focused on gaps in the range of tens of milliseconds, a condition which has not received much attention yet. The proposed DNN structure was trained on audio signals containing music and musical instruments, separately, with 64-ms long gaps. The input to the DNN was the context, i.e., the signal surrounding the gap, transformed into time-frequency (TF) coefficients. Two networks were analyzed, a DNN with complex-valued TF coefficient output and another one producing magnitude TF coefficient output, both based on the same network architecture. We found significant differences in the inpainting results between the two DNNs. In particular, we discuss the observation that the complex-valued DNN fails to produce reliable results outside the low frequency range. We demonstrated a generally good usability of the proposed DNN structure for generating complex audio signals like music.
       </h5>
 
+      Encoder architecture:
+      <h1><img src="images/encoder-signal.jpg" alt="Good spectrogram" width="1000"></h1>
+
+      Decoder architecture:
       <h1><img src="images/decoder-signal.jpg" alt="Good spectrogram" width="1000"></h1>
+
+      <h5 class="w3-padding-32">
+        Now we introduce sound examples generated with the network. They are divided into three classes according to our perception of them. These are: good, noisy and faded. The faded class presents samples where we hear as if the algorithm did a fade-in and fade-out on the gap.
+      </h5>
 
     </div>
 
