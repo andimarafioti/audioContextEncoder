@@ -12,7 +12,7 @@ The paper uses both google's Nsynth dataset and the FMA dataset. In order to rec
 The default parameters for the network come pickled in the file `Papers_Context_Encoder_parameters.pkl`. In order 
 to make other architectures use [saveParameters.py](utils/saveParameters.py).
  
-To train the network, execute in the parent folder `python paperArchitecture.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
+To train the network, execute in the parent folder `python trainMagnitudeNetwork.py` or `python trainComplexNetwork.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
 
 ## Sound examples
 
