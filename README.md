@@ -1,6 +1,6 @@
 # Audio inpainting with a context encoder
 
-This project accompanies the research work on audio inpainting of small gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. There is a [preprint of the paper](https://www.researchgate.net/publication/328600925_A_context_encoder_for_audio_inpainting) available now: https://www.researchgate.net/publication/328600925_A_context_encoder_for_audio_inpainting.
+This project accompanies the research work on audio inpainting of small gaps done at the Acoustics Research Institute in Vienna collaborating with the Swiss Data Science Center. The paper was [published at IEEE TASLP](https://ieeexplore.ieee.org/document/8867915) available now: https://ieeexplore.ieee.org/document/8867915.
 
 # Installation
 
@@ -9,10 +9,9 @@ Install the requirements with `pip install -r requirements.txt`. For windows use
 # Instructions
 The paper uses both google's Nsynth dataset and the FMA dataset. In order to recreate the used dataset, execute in the parent folder either `python make_nsynthdataset.py` or  `python make_fmadataset.py`. The output of the scripts are three `tfrecord` files for training, validating and testing the model.
  
-The default parameters for the network come pickled in the file `Papers_Context_Encoder_parameters.pkl`. In order 
-to make other architectures use [saveParameters.py](utils/saveParameters.py).
+The default parameters for the network come pickled in the file `magnitude_network_parameters.pkl` and `complex_network_parameters.pkl`. In order to make other architectures use [saveParameters.py](utils/saveParameters.py).
  
-To train the network, execute in the parent folder `python paperArchitecture.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
+To train the network, execute in the parent folder `python trainMagnitudeNetwork.py` or `python trainComplexNetwork.py`. This will train the network for 600k steps with a learning rate of 1e-3. You can select on which tfrecords to train the network, the script assumes you have created the nsynth dataset.
 
 ## Sound examples
 
